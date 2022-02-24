@@ -1,6 +1,71 @@
 {
 	"name": "99_LOAD_PTOS_VTA_CSV",
 	"properties": {
+		"activities": [
+			{
+				"name": "Copy data from csv",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": false,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"writeBehavior": "Insert",
+						"sqlWriterUseTableLock": false,
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": true
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CSV_PTOS_VENTA",
+						"type": "DatasetReference",
+						"parameters": {
+							"Puntos_de_venta_mensual": "/Datos planos/*"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": "wsasadvcoedna.privatelink.sql.azuresynapse.net",
+							"SYNAPSE_SemanticDB": "SQLSEML2DVDNA",
+							"SYNAPSE_SemanticSchema": "GRO_LAS",
+							"SYNAPSE_SemanticTable": "EDW_FACTL2_MensualPuntosVenta"
+						}
+					}
+				]
+			}
+		],
 		"folder": {
 			"name": "Manual"
 		},
