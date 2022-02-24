@@ -1,0 +1,37 @@
+{
+	"name": "CSV_MANUAL_ADHOC",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_BlobStorage_Raw",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"CSV_FILE": {
+				"type": "string",
+				"defaultValue": "/MANUAL/*"
+			}
+		},
+		"folder": {
+			"name": "FILE SHARE AND BLOB"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@dataset().CSV_FILE",
+					"type": "Expression"
+				},
+				"folderPath": "MANUAL",
+				"container": "fsdvdnalaseus2raw"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

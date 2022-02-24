@@ -1,0 +1,63 @@
+{
+	"name": "06_LAS_EDW_GASTOS_MASTER",
+	"properties": {
+		"activities": [
+			{
+				"name": "Load Fact Gastos",
+				"description": "Cargar de datos de gastos",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "34_LAS_EDW_Load_Gastos_Facts",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"OCLOUD_SYNAPSE_Server": {
+							"value": "@pipeline().parameters.OCLOUD_SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"OCLOUD_SYNAPSE_SemanticDB": {
+							"value": "@pipeline().parameters.OCLOUD_SYNAPSE_SemanticDB",
+							"type": "Expression"
+						},
+						"SYNAPSE_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"SYNAPSE_SemanticDB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_SemanticDB": {
+				"type": "string",
+				"defaultValue": "SQLSEMANTICDVDNA"
+			},
+			"OCLOUD_SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvocloudcorpeus2.sql.azuresynapse.net"
+			},
+			"OCLOUD_SYNAPSE_SemanticDB": {
+				"type": "string",
+				"defaultValue": "SQLSEMANTICDVOCLOUD"
+			}
+		},
+		"folder": {
+			"name": "LAS Master"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-10T14:31:47Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

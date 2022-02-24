@@ -1,0 +1,140 @@
+{
+	"name": "01_LAS_EDW_RENTABILIDAD_GASTOS",
+	"properties": {
+		"activities": [
+			{
+				"name": "Load Curated Rentabildiad Gastos",
+				"description": "Carga de los datos del Trial Balance Base Real desde MGT LAS a GRO LAS",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT [AnioMes] as Periodo_Id\n      ,[Rubro]\n      ,[Concepto]\n      ,[Reporte]\n      ,[Orden]\n      ,[Ledger]\n      ,[Moneda] as Moneda_Cd\n      ,[Cod_Pais] as Pais_Cd \n       ,[El_Id]\n      ,[AN] as Area_Negocio_Id\n      ,[Area_Negocio] as Area_Negocio_Desc\n      ,[Cc_Nivel1_Desc]\n      ,[Cc_Nivel2_Desc]\n      ,[Cc_Nivel3_Desc]\n      ,[CC]\n      ,[Centro_De_Costos]\n      ,[Cn_Nivel1_Desc]\n      ,[Cn_Nivel2_Desc]\n      ,[Cn_Nivel3_Desc]\n      ,[CN]\n      ,[Cuenta_Natural]\n      ,[Combination_Segments]\n      ,[Cc_Nivel1_Id]\n      ,[Cc_Nivel2_Id]\n      ,[Cc_Nivel3_Id]\n      ,[Cn_Nivel1_Id]\n      ,[Cn_Nivel3_Id]\n      ,[Concatenado_Tb]\n    ,cast( [Saldo_Final_USD] as decimal(28,8)) as Saldo_Final_USD\n      ,cast( [Mov_Mes_USD] as decimal(28,8))as Mov_Mes_USD\n      ,cast( [Saldo_Final_ML] as decimal(28,8)) as  Saldo_Final_ML\n      ,cast( [Mov_Mes_ML ]as decimal(28,8))as Mov_Mes_ML\n      ,cast( [Saldo_Inicial_ML] as decimal(28,8)) as Saldo_Inicial_ML\n      ,cast( [Debitos_ML] as decimal(28,8))as Debitos_ML\n      ,cast( [Creditos_ML]as decimal(28,8)) as Creditos_ML\n      ,[Storeday] as Storeday\n\t ,AN_Dir\n\t  ,AN_Ind\n\t  ,CC_Dir\n\t  ,CC_Ind\n  FROM [MGT_LAS].[Finance_FactTrial_BaseReal]\n  where aniomes >=  CONVERT(nvarchar(6), GETDATE()-60, 112)",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": "delete FROM [GRO_LAS].[EDW_RentabilidadGastos]\nwhere Periodo_Id>=  CONVERT(nvarchar(6), GETDATE()-60, 112)",
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "EDW_LAS_CURATED",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": "wsasadvcoedna.privatelink.sql.azuresynapse.net",
+							"SYNAPSE_CuratedDB": "SQLCURATEDDVDNA",
+							"SYNAPSE_CuratedSchema": "MGT_LAS",
+							"SYNAPSE_CuratedTable": "Finance_FactTrial_BaseReal"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "EDW_LAS_CURATED",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": "wsasadvcoedna.privatelink.sql.azuresynapse.net",
+							"SYNAPSE_CuratedDB": "SQLCURATEDDVDNA",
+							"SYNAPSE_CuratedSchema": "GRO_LAS",
+							"SYNAPSE_CuratedTable": "EDW_FinanceTrialGastos"
+						}
+					}
+				]
+			},
+			{
+				"name": "Exec Prorrateo Gastos",
+				"description": "Ejecuta el sp de prorrateo de gastos en base a la venta",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Load Curated Rentabildiad Gastos",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "@concat('GRO_LAS.','usp_load_edw_rentabilidadprorrateogastos')",
+						"type": "Expression"
+					},
+					"storedProcedureParameters": {
+						"PeriodoDesde": {
+							"value": {
+								"value": "202111",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PeriodoHasta": {
+							"value": {
+								"value": "202111",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_Curated",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"LS_DB": {
+							"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			}
+		},
+		"folder": {
+			"name": "LAS Master"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

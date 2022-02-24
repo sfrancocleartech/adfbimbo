@@ -1,0 +1,211 @@
+{
+	"name": "AzureSynapseAnalyticsTable3",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQLSynapse_Curated",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [
+			{
+				"name": "Pais",
+				"type": "varchar"
+			},
+			{
+				"name": "Anio",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Mes",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Ceve_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Ceve",
+				"type": "varchar"
+			},
+			{
+				"name": "Canal_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Canal",
+				"type": "varchar"
+			},
+			{
+				"name": "Subcanal_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Subcanal",
+				"type": "varchar"
+			},
+			{
+				"name": "Cadena_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Cadena",
+				"type": "varchar"
+			},
+			{
+				"name": "Ruta_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Ruta",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Cliente_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Cliente",
+				"type": "varchar"
+			},
+			{
+				"name": "Producto_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Producto",
+				"type": "varchar"
+			},
+			{
+				"name": "Marca_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Nombre_Marca",
+				"type": "varchar"
+			},
+			{
+				"name": "Categoria_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Nombre_Categoria",
+				"type": "varchar"
+			},
+			{
+				"name": "Linea_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Nombre_Linea",
+				"type": "varchar"
+			},
+			{
+				"name": "Sublinea_Id",
+				"type": "varchar"
+			},
+			{
+				"name": "Nombre_Sublinea",
+				"type": "varchar"
+			},
+			{
+				"name": "Venta_Bruta_Pzs",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Devolucion_Pzs",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Venta_Neta_Pzs",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Venta_Bruta_ConteHomog",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Venta_Bruta_UE",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "Devolucion_UE",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "Venta_Neta_UE",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "Venta_Bruta_Sist_Com_ML",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Recuperacion_Neta_ML",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Devolucion_Neta_ML",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Bonificacion_Factura_ML",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Acuerdos_Comerciales_ML",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Dinamica_Comercial_ML",
+				"type": "float",
+				"precision": 15
+			},
+			{
+				"name": "Venta_Bruta_TN",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "Devolucion_TN",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "Venta_Neta_TN",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 4
+			},
+			{
+				"name": "Venta_Neta_ML",
+				"type": "float",
+				"precision": 15
+			}
+		],
+		"typeProperties": {
+			"schema": "GRO_LAS",
+			"table": "EDW_RentabilidadVentas"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

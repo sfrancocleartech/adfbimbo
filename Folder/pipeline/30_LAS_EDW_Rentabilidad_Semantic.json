@@ -1,0 +1,171 @@
+{
+	"name": "30_LAS_EDW_Rentabilidad_Semantic",
+	"properties": {
+		"activities": [
+			{
+				"name": "Load Facts",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Load Dim Tipo 2",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "Load Dim Tipo 1",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "31_LAS_EDW_Load_Rentabilidad_Facts",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"SYNAPSE_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"SYNAPSE_SemanticDB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						},
+						"SYNAPSE_CuratedDB": {
+							"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Load Dim Tipo 1",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "32_LAS_EDW_Load_Rentabilidad_Dim_Tipo1",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"SYNAPSE_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"SYNAPSE_SemanticDB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						},
+						"SYNAPSE_CuratedDB": {
+							"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Load Dim Tipo 2",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "33_LAS_EDW_Load_Rentabilidad_Dim_Tipo2",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"SYNAPSE_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"SYNAPSE_SemanticDB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						},
+						"SYNAPSE_CuratedDB": {
+							"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Load Aggregations",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Load Facts",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "32_LAS_EDW_Load_Rentabilidad_Agg",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"SYNAPSE_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"SYNAPSE_SemanticDB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						},
+						"SYNAPSE_CuratedDB": {
+							"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"CNTRL_Server": {
+				"type": "string",
+				"defaultValue": "corpdnasqldv1.database.windows.net"
+			},
+			"CNTRL_DB": {
+				"type": "string",
+				"defaultValue": "DBCORPDNADV1"
+			},
+			"CNTRL_Schema": {
+				"type": "string",
+				"defaultValue": "CNTRL_EDW_LAS"
+			},
+			"CNTRL_Table": {
+				"type": "string",
+				"defaultValue": "ADF_PARAMETRIA_MODELO_DATOS"
+			},
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_SemanticDB": {
+				"type": "string",
+				"defaultValue": "SQLSEML2DVDNA"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			}
+		},
+		"folder": {
+			"name": "LAS Semantic"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:28Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

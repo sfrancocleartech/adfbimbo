@@ -1,0 +1,11 @@
+{
+	"name": "LS_AKV_DnAGlobal",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://DNA-Global.vault.azure.net/"
+		}
+	}
+}

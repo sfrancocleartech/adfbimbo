@@ -1,0 +1,183 @@
+{
+	"name": "99_LAS_EDW_Rentabilidad_Curated_Purge",
+	"properties": {
+		"description": "Truncate all curated stg tables",
+		"activities": [
+			{
+				"name": "Lookup Table List",
+				"description": "Lee la paremetria para iterar sobre todo lo que se quiera cargar.",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Set TimeStamp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT [EsquemaLanding],\n\t[TablaLanding],\n\t[EsquemaCurated] ,\n\t[TablaCurated] ,\n\t[EsquemaSemantic],\n\t[TablaSemantic] \n  FROM [CNTRL_EDW_LAS].[ADF_PARAMETRIA_MODELO_DATOS]\n  WHERE Activo = 1\nORDER BY OrdenEjecucion",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "EDW_LAS_PARAMETRIA_MODELO_DATOS",
+						"type": "DatasetReference",
+						"parameters": {
+							"CNTRL_Server": {
+								"value": "@pipeline().parameters.CNTRL_Server",
+								"type": "Expression"
+							},
+							"CNTRL_DB": {
+								"value": "@pipeline().parameters.CNTRL_DB",
+								"type": "Expression"
+							},
+							"CNTRL_Schema": {
+								"value": "@pipeline().parameters.CNTRL_Schema",
+								"type": "Expression"
+							},
+							"CNTRL_Table": {
+								"value": "@pipeline().parameters.CNTRL_Table",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "For Each Load Config",
+				"description": "Para cada parametria activa vamos a ir a buscar y cargar los datos desde landing.",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup Table List",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup Table List').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Truncat Table",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'@{item().EsquemaCurated}.stg_@{item().TablaCurated}') AND type in (N'U'))\nTRUNCATE TABLE @{item().EsquemaCurated}.[stg_@{item().TablaCurated}]; SELECT 1;",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "EDW_LAS_CURATED",
+									"type": "DatasetReference",
+									"parameters": {
+										"SYNAPSE_Server": {
+											"value": "@pipeline().parameters.SYNAPSE_Server",
+											"type": "Expression"
+										},
+										"SYNAPSE_CuratedDB": {
+											"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+											"type": "Expression"
+										},
+										"SYNAPSE_CuratedSchema": {
+											"value": "@item().EsquemaCurated",
+											"type": "Expression"
+										},
+										"SYNAPSE_CuratedTable": {
+											"value": "@concat('stg_',item().TablaCurated)",
+											"type": "Expression"
+										}
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Set TimeStamp",
+				"description": "set the time stamp",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Timestamps",
+					"value": {
+						"value": "@utcnow()",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"CNTRL_Server": {
+				"type": "string",
+				"defaultValue": "corpdnasqldv1.database.windows.net"
+			},
+			"CNTRL_DB": {
+				"type": "string",
+				"defaultValue": "DBCORPDNADV1"
+			},
+			"CNTRL_Schema": {
+				"type": "string",
+				"defaultValue": "CNTRL_EDW_LAS"
+			},
+			"CNTRL_Table": {
+				"type": "string",
+				"defaultValue": "ADF_PARAMETRIA_MODELO_DATOS"
+			},
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_LandingDB": {
+				"type": "string",
+				"defaultValue": "SQLLANDINGDVDNA"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			}
+		},
+		"variables": {
+			"Timestamps": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "LAS Curated"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

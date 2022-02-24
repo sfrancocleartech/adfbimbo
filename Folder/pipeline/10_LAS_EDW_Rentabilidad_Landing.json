@@ -1,0 +1,658 @@
+{
+	"name": "10_LAS_EDW_Rentabilidad_Landing",
+	"properties": {
+		"description": "Copy files in share folder to landing in synapse",
+		"activities": [
+			{
+				"name": "Lookup Table List",
+				"description": "Lee la paremetria para iterar sobre todo lo que se quiera cargar.",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Set TimeStamp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT [DirectorioOrigen]\n      ,[NombreArchivo]\n      ,[DelimitadorArchivo]\n      ,[EsquemaDestino]\n      ,[TablaDestino]\n  FROM [CNTRL_EDW_LAS].[ADF_PARAMETRIA_ARCHIVOS_ORIGEN]\n  WHERE Activo = 1\nORDER BY OrdenEjecucion",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "EDW_LAS_PARAMETRIA_ARCHIVOS_ORIGEN",
+						"type": "DatasetReference",
+						"parameters": {
+							"CNTRL_Server": {
+								"value": "@pipeline().parameters.CNTRL_Server",
+								"type": "Expression"
+							},
+							"CNTRL_DB": {
+								"value": "@pipeline().parameters.CNTRL_DB",
+								"type": "Expression"
+							},
+							"CNTRL_Schema": {
+								"value": "@pipeline().parameters.CNTRL_Schema",
+								"type": "Expression"
+							},
+							"CNTRL_Table": {
+								"value": "@pipeline().parameters.CNTRL_Table",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "For Each Load Config",
+				"description": "Para cada parametria activa vamos a ir a buscar y cargar los archivos.",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup Table List",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup Table List').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Load Landing",
+							"description": "Copiamos los archivos al landing de synapse",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureFileStorageReadSettings",
+										"recursive": true,
+										"wildcardFolderPath": {
+											"value": "@item().DirectorioOrigen",
+											"type": "Expression"
+										},
+										"wildcardFileName": {
+											"value": "@item().NombreArchivo",
+											"type": "Expression"
+										},
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "SqlDWSink",
+									"preCopyScript": {
+										"value": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'@{item().EsquemaDestino}.@{item().TablaDestino}') AND type in (N'U'))\nTRUNCATE TABLE @{item().EsquemaDestino}.@{item().TablaDestino}; ",
+										"type": "Expression"
+									},
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "EDW_LAS_INPUT_FILE",
+									"type": "DatasetReference",
+									"parameters": {
+										"FS_Path": {
+											"value": "@item().DirectorioOrigen",
+											"type": "Expression"
+										},
+										"FS_File": {
+											"value": "@item().NombreArchivo",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "EWD_LAS_LANDING",
+									"type": "DatasetReference",
+									"parameters": {
+										"SYNAPSE_Server": {
+											"value": "@pipeline().parameters.SYNAPSE_Server",
+											"type": "Expression"
+										},
+										"SYNAPSE_LandingDB": {
+											"value": "@pipeline().parameters.SYNAPSE_LandingDB",
+											"type": "Expression"
+										},
+										"SYNAPSE_LandingSchema": {
+											"value": "@item().EsquemaDestino",
+											"type": "Expression"
+										},
+										"SYNAPSE_LandingTable": {
+											"value": "@item().TablaDestino",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "USP Update Log",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Load Landing",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[CNTRL_EDW_LAS].[usp_UpdateAdfLogTable]",
+								"storedProcedureParameters": {
+									"DataFactory_Name": {
+										"value": {
+											"value": "@pipeline().DataFactory",
+											"type": "Expression"
+										}
+									},
+									"Pipeline_Name": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										}
+									},
+									"RunId": {
+										"value": {
+											"value": "@pipeline()?.TriggeredByPipelineRunId",
+											"type": "Expression"
+										}
+									},
+									"Source": {
+										"value": {
+											"value": "@item().NombreArchivo",
+											"type": "Expression"
+										}
+									},
+									"Destination": {
+										"value": {
+											"value": "@item().TablaDestino",
+											"type": "Expression"
+										}
+									},
+									"TriggerType": {
+										"value": {
+											"value": "@pipeline().TriggerType",
+											"type": "Expression"
+										}
+									},
+									"TriggerId": {
+										"value": {
+											"value": "@pipeline().TriggerId",
+											"type": "Expression"
+										}
+									},
+									"TriggerName": {
+										"value": {
+											"value": "@pipeline().TriggerName",
+											"type": "Expression"
+										}
+									},
+									"TriggerTime": {
+										"value": {
+											"value": "@pipeline().TriggerTime",
+											"type": "Expression"
+										}
+									},
+									"rowsCopied": {
+										"value": {
+											"value": "@activity('Load Landing').output.rowsCopied",
+											"type": "Expression"
+										}
+									},
+									"DataRead": {
+										"value": {
+											"value": "@activity('Load Landing').output.rowsRead",
+											"type": "Expression"
+										}
+									},
+									"No_ParallelCopies": {
+										"value": {
+											"value": "@activity('Load Landing').output.usedParallelCopies",
+											"type": "Expression"
+										}
+									},
+									"copyDuration_in_secs": {
+										"value": {
+											"value": "@activity('Load Landing').output.copyDuration",
+											"type": "Expression"
+										}
+									},
+									"effectiveIntegrationRuntime": {
+										"value": {
+											"value": "@activity('Load Landing').output.effectiveIntegrationRuntime",
+											"type": "Expression"
+										}
+									},
+									"Source_Type": {
+										"value": {
+											"value": "@activity('Load Landing').output.executionDetails[0].source.type",
+											"type": "Expression"
+										}
+									},
+									"Sink_Type": {
+										"value": {
+											"value": "@activity('Load Landing').output.executionDetails[0].sink.type",
+											"type": "Expression"
+										}
+									},
+									"Execution_Status": {
+										"value": {
+											"value": "@activity('Load Landing').output.executionDetails[0].status",
+											"type": "Expression"
+										}
+									},
+									"CopyActivity_Start_Time": {
+										"value": {
+											"value": "@activity('Load Landing').output.executionDetails[0].start",
+											"type": "Expression"
+										}
+									},
+									"CopyActivity_End_Time": {
+										"value": {
+											"value": "@utcnow()",
+											"type": "Expression"
+										}
+									},
+									"CopyActivity_queuingDuration_in_secs": {
+										"value": {
+											"value": "@{activity('Load Landing').output.executionDetails[0]. detailedDurations.queuingDuration}",
+											"type": "Expression"
+										}
+									},
+									"CopyActivity_transferDuration_in_secs": {
+										"value": {
+											"value": "@{activity('Load Landing').output.executionDetails[0]. detailedDurations.transferDuration}",
+											"type": "Expression"
+										}
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_SQL_AuditControl",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"LS_Server": "corpdnasqldv1.database.windows.net",
+									"LS_DB": "DBCORPDNADV1"
+								}
+							}
+						},
+						{
+							"name": "USP Update Failure",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Load Landing",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[CNTRL_EDW_LAS].[usp_UpdateAdfErrorTable]",
+								"storedProcedureParameters": {
+									"DataFactory_Name": {
+										"value": {
+											"value": "@pipeline().DataFactory",
+											"type": "Expression"
+										}
+									},
+									"Pipeline_Name": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										}
+									},
+									"RunId": {
+										"value": {
+											"value": "@pipeline()?.TriggeredByPipelineRunId",
+											"type": "Expression"
+										}
+									},
+									"Source": {
+										"value": {
+											"value": "@item().NombreArchivo",
+											"type": "Expression"
+										}
+									},
+									"Destination": {
+										"value": {
+											"value": "@item().TablaDestino",
+											"type": "Expression"
+										}
+									},
+									"TriggerType": {
+										"value": {
+											"value": "@pipeline().TriggerType",
+											"type": "Expression"
+										}
+									},
+									"TriggerId": {
+										"value": {
+											"value": "@pipeline().TriggerId",
+											"type": "Expression"
+										}
+									},
+									"TriggerName": {
+										"value": {
+											"value": "@pipeline().TriggerName",
+											"type": "Expression"
+										}
+									},
+									"TriggerTime": {
+										"value": {
+											"value": "@pipeline().TriggerTime",
+											"type": "Expression"
+										}
+									},
+									"No_ParallelCopies": {
+										"value": {
+											"value": "@activity('Load Landing').output.usedParallelCopies",
+											"type": "Expression"
+										}
+									},
+									"copyDuration_in_secs": {
+										"value": {
+											"value": "@activity('Load Landing').output.copyDuration",
+											"type": "Expression"
+										}
+									},
+									"effectiveIntegrationRuntime": {
+										"value": {
+											"value": "@activity('Load Landing').output.effectiveIntegrationRuntime",
+											"type": "Expression"
+										}
+									},
+									"Source_Type": {
+										"value": {
+											"value": "@activity('Load Landing').output.executionDetails[0].source.type",
+											"type": "Expression"
+										}
+									},
+									"Sink_Type": {
+										"value": {
+											"value": "@activity('Load Landing').output.executionDetails[0].sink.type",
+											"type": "Expression"
+										}
+									},
+									"Execution_Status": {
+										"value": {
+											"value": "@activity('Load Landing').output.executionDetails[0].status",
+											"type": "Expression"
+										}
+									},
+									"ErrorCode": {
+										"value": {
+											"value": "@activity('Load Landing').error.errorCode",
+											"type": "Expression"
+										}
+									},
+									"ErrorDescription": {
+										"value": {
+											"value": "@activity('Load Landing').error.message",
+											"type": "Expression"
+										}
+									},
+									"ErrorLoggedTIme": {
+										"value": {
+											"value": "@utcnow()",
+											"type": "Expression"
+										}
+									},
+									"FailureType": {
+										"value": {
+											"value": "'COPY DATA ERROR'",
+											"type": "Expression"
+										}
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_SQL_AuditControl",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"LS_Server": "corpdnasqldv1.database.windows.net",
+									"LS_DB": "DBCORPDNADV1"
+								}
+							}
+						},
+						{
+							"name": "Copy To Archive",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "USP Update Log",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureFileStorageReadSettings",
+										"recursive": true,
+										"wildcardFolderPath": {
+											"value": "@item().DirectorioOrigen",
+											"type": "Expression"
+										},
+										"wildcardFileName": {
+											"value": "@item().NombreArchivo",
+											"type": "Expression"
+										},
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobStorageWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".csv"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "EDW_LAS_INPUT_FILE",
+									"type": "DatasetReference",
+									"parameters": {
+										"FS_Path": "@item().DirectorioOrigen",
+										"FS_File": "@item().NombreArchivo"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "EDW_LAS_ARCHIVE_FILE",
+									"type": "DatasetReference",
+									"parameters": {
+										"BL_File": "$$FILEPATH"
+									}
+								}
+							]
+						},
+						{
+							"name": "Remove File from FS",
+							"description": "Borramos el file del file share ya procesado",
+							"type": "Delete",
+							"dependsOn": [
+								{
+									"activity": "Copy To Archive",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "EDW_LAS_INPUT_FILE",
+									"type": "DatasetReference",
+									"parameters": {
+										"FS_Path": {
+											"value": "@item().DirectorioOrigen",
+											"type": "Expression"
+										},
+										"FS_File": {
+											"value": "@item().NombreArchivo",
+											"type": "Expression"
+										}
+									}
+								},
+								"enableLogging": false,
+								"storeSettings": {
+									"type": "AzureFileStorageReadSettings",
+									"recursive": true,
+									"wildcardFileName": {
+										"value": "@item().NombreArchivo",
+										"type": "Expression"
+									},
+									"enablePartitionDiscovery": false
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Set TimeStamp",
+				"description": "set the time stamp",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Timestamps",
+					"value": {
+						"value": "@utcnow()",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"CNTRL_Server": {
+				"type": "string",
+				"defaultValue": "corpdnasqldv1.database.windows.net"
+			},
+			"CNTRL_DB": {
+				"type": "string",
+				"defaultValue": "DBCORPDNADV1"
+			},
+			"CNTRL_Schema": {
+				"type": "string",
+				"defaultValue": "CNTRL_EDW_LAS"
+			},
+			"CNTRL_Table": {
+				"type": "string",
+				"defaultValue": "ADF_PARAMETRIA_ARCHIVOS_ORIGEN"
+			},
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_LandingDB": {
+				"type": "string",
+				"defaultValue": "SQLLANDINGDVDNA"
+			}
+		},
+		"variables": {
+			"Timestamps": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "LAS Landing"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

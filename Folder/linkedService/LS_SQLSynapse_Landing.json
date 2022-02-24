@@ -1,0 +1,33 @@
+{
+	"name": "LS_SQLSynapse_Landing",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"parameters": {
+			"LS_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"LS_DB": {
+				"type": "string",
+				"defaultValue": "SQLLANDINGDVDNA"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDW",
+		"typeProperties": {
+			"connectionString": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=wsasadvcoedna.sql.azuresynapse.net;Initial Catalog=SQLLANDINGDVDNA;User ID=USR_LAS_ETL",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_KV_Secrets",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "kvsecret-Synapse-DVDNA-USR-LAS-ETL"
+			}
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

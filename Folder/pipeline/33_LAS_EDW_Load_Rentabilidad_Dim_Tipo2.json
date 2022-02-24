@@ -1,0 +1,342 @@
+{
+	"name": "33_LAS_EDW_Load_Rentabilidad_Dim_Tipo2",
+	"properties": {
+		"description": "Data Flow para Dimensiones SCD Tipo 1",
+		"activities": [
+			{
+				"name": "Load Dim EntidadLegal",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Load Dim Ruta",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo2",
+						"type": "DataFlowReference",
+						"parameters": {
+							"PrimaryKey": {
+								"value": "'@{'EL_Cd'}'",
+								"type": "Expression"
+							},
+							"Columns": {
+								"value": "'@{'Pais_Cd,Nombre_Entidad_Legal_Desc,Moneda_Cd'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"GenericInput": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatEntidadLegal"
+							},
+							"ExistingDimensionTable": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_EntidadLegal"
+							},
+							"DimensionTableSink": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_EntidadLegal"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Load Dim Ruta",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo2",
+						"type": "DataFlowReference",
+						"parameters": {
+							"PrimaryKey": {
+								"value": "'@{'Ruta_Cd'}'",
+								"type": "Expression"
+							},
+							"Columns": {
+								"value": "'@{'Ruta_Id,Ruta_Desc,Pais_Cd,Agencia_Id,Origen,FechaFinOrigen,Supervisor_Cd'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"GenericInput": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatRuta"
+							},
+							"ExistingDimensionTable": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Ruta"
+							},
+							"DimensionTableSink": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Ruta"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Load Dim Producto",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Load Dim Canales",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo2",
+						"type": "DataFlowReference",
+						"parameters": {
+							"PrimaryKey": {
+								"value": "'@{'Producto_Id'}'",
+								"type": "Expression"
+							},
+							"Columns": {
+								"value": "'@{'Producto_Desc,Pais_Cd,Linea_Id,SubLinea_Id,Marca_Id,Unidad_Id,Unidad_Desc,Tope_Devolucion_Qty,Vida_Anaquel,Codigo_Barras_Cd,Contenido_Neto,UE,Presentacion_Id,Gramaje,Categoria_Burbuja,Categoria_Homologadora,Categoria_Id,Cupo'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"GenericInput": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatProducto"
+							},
+							"ExistingDimensionTable": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Producto"
+							},
+							"DimensionTableSink": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Producto"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Load Dim Canales",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo2",
+						"type": "DataFlowReference",
+						"parameters": {
+							"PrimaryKey": {
+								"value": "'@{'SubCanal_Id'}'",
+								"type": "Expression"
+							},
+							"Columns": {
+								"value": "'@{'SubCanal_Desc,Canal_Desc'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"GenericInput": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatCanalSubCanal"
+							},
+							"ExistingDimensionTable": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_CanalSubCanal"
+							},
+							"DimensionTableSink": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_CanalSubCanal"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_SemanticDB": {
+				"type": "string",
+				"defaultValue": "SQLSEML2DVDNA"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			}
+		},
+		"folder": {
+			"name": "LAS Semantic"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:27Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

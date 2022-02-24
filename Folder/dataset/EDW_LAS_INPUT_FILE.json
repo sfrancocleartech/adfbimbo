@@ -1,0 +1,43 @@
+{
+	"name": "EDW_LAS_INPUT_FILE",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_FileStorage_Raw",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FS_Path": {
+				"type": "string",
+				"defaultValue": "/PROCESAR/"
+			},
+			"FS_File": {
+				"type": "string",
+				"defaultValue": "*.csv"
+			}
+		},
+		"folder": {
+			"name": "FILE SHARE AND BLOB"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureFileStorageLocation",
+				"fileName": {
+					"value": "@dataset().FS_File",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().FS_Path",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

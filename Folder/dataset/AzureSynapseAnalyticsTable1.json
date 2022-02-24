@@ -1,0 +1,17 @@
+{
+	"name": "AzureSynapseAnalyticsTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQLSynapse_Curated",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"LS_Server": "wsasadvcoedna.privatelink.sql.azuresynapse.net",
+				"LS_DB": "SQLCURATEDDVDNA"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

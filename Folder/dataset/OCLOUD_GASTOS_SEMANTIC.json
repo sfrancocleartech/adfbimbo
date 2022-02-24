@@ -1,0 +1,40 @@
+{
+	"name": "OCLOUD_GASTOS_SEMANTIC",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQLSynapse_OCloud_SEML2",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"OCLOUD_SYNAPSE_Server": {
+				"type": "string"
+			},
+			"OCLOUD_SYNAPSE_SemanticDB": {
+				"type": "string"
+			},
+			"OCLOUD_SYNAPSE_SemanticSchema": {
+				"type": "string"
+			},
+			"OCLOUD_SYNAPSE_SemanticTable": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "SYNAPSE"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().OCLOUD_SYNAPSE_SemanticSchema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().OCLOUD_SYNAPSE_SemanticTable",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

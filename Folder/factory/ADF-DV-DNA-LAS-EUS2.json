@@ -1,0 +1,9 @@
+{
+	"name": "ADF-DV-DNA-LAS-EUS2",
+	"location": "eastus2",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f863006d-0b47-44a9-8547-a4affabb74e2",
+		"tenantId": "973ba820-4a58-4246-84bf-170e50b3152a"
+	}
+}

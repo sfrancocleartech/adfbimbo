@@ -1,0 +1,279 @@
+{
+	"name": "31_LAS_EDW_Load_Rentabilidad_Facts",
+	"properties": {
+		"activities": [
+			{
+				"name": "Load stg fact rentabilidad real",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT * FROM GRO_LAS.EDW_RentabilidadReal\nWHERE periodo_id in (\nSELECT  distinct CONCAT([ano], right(replicate('0',2) + [mes],2) ) as Periodo_Id FROM GRO_LAS.stg_EDW_RentabilidadReal)",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": {
+							"value": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'GRO_LAS.stg_EDW_FACTL2_MensualRentabilidadReal') AND type in (N'U'))\nTRUNCATE TABLE GRO_LAS.stg_EDW_FACTL2_MensualRentabilidadReal; ",
+							"type": "Expression"
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "EDW_LAS_CURATED",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": {
+								"value": "@pipeline().parameters.SYNAPSE_Server",
+								"type": "Expression"
+							},
+							"SYNAPSE_CuratedDB": {
+								"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+								"type": "Expression"
+							},
+							"SYNAPSE_CuratedSchema": {
+								"value": "'GRO_LAS'",
+								"type": "Expression"
+							},
+							"SYNAPSE_CuratedTable": {
+								"value": "'EDW_RentabilidadReal'",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": {
+								"value": "@pipeline().parameters.SYNAPSE_Server",
+								"type": "Expression"
+							},
+							"SYNAPSE_SemanticDB": {
+								"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+								"type": "Expression"
+							},
+							"SYNAPSE_SemanticSchema": {
+								"value": "GRO_LAS",
+								"type": "Expression"
+							},
+							"SYNAPSE_SemanticTable": {
+								"value": "stg_EDW_FACTL2_MensualRentabilidadReal",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "SP Load Fact Rentbilidad Real",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Load stg fact rentabilidad real",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[GRO_LAS].[usp_load_edw_factrentabilidadreal]",
+						"type": "Expression"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_SEML2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"LS_DB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Load stg fact rentabilidad PPTO",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT * FROM GRO_LAS.EDW_RentabilidadPPTO\nWHERE periodo_id in (\nSELECT  distinct CONCAT([ano], right(replicate('0',2) + [mes],2) ) as Periodo_Id FROM GRO_LAS.stg_EDW_RentabilidadPPTO)",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": {
+							"value": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'GRO_LAS.stg_EDW_FACTL2_MensualRentabilidadPPTO') AND type in (N'U'))\nTRUNCATE TABLE GRO_LAS.stg_EDW_FACTL2_MensualRentabilidadPPTO; ",
+							"type": "Expression"
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "EDW_LAS_CURATED",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": {
+								"value": "@pipeline().parameters.SYNAPSE_Server",
+								"type": "Expression"
+							},
+							"SYNAPSE_CuratedDB": {
+								"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+								"type": "Expression"
+							},
+							"SYNAPSE_CuratedSchema": {
+								"value": "'GRO_LAS'",
+								"type": "Expression"
+							},
+							"SYNAPSE_CuratedTable": {
+								"value": "'EDW_RentabilidadPPTO'",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": {
+								"value": "@pipeline().parameters.SYNAPSE_Server",
+								"type": "Expression"
+							},
+							"SYNAPSE_SemanticDB": {
+								"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+								"type": "Expression"
+							},
+							"SYNAPSE_SemanticSchema": {
+								"value": "GRO_LAS",
+								"type": "Expression"
+							},
+							"SYNAPSE_SemanticTable": {
+								"value": "stg_EDW_FACTL2_MensualRentabilidadPPTO",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "SP Load Fact Rentbilidad PPTO",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Load stg fact rentabilidad PPTO",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[GRO_LAS].[usp_load_edw_factrentabilidadppto]",
+						"type": "Expression"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_SEML2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"LS_DB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_SemanticDB": {
+				"type": "string",
+				"defaultValue": "SQLSEML2DVDNA"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			}
+		},
+		"folder": {
+			"name": "LAS Semantic"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

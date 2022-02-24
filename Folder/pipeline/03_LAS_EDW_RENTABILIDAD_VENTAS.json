@@ -1,0 +1,52 @@
+{
+	"name": "03_LAS_EDW_RENTABILIDAD_VENTAS",
+	"properties": {
+		"activities": [
+			{
+				"name": "ProcedureInsertarVentasCurated",
+				"description": "Transforma Ventas Landing a Ventas Curated",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[GRO_LAS].[usp_load_edw_ventascurated]"
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_Curated",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": "wsasadvcoedna.privatelink.sql.azuresynapse.net",
+						"LS_DB": "SQLCURATEDDVDNA"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_LandingDB": {
+				"type": "string",
+				"defaultValue": "SQLLANDINGDVDNA"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			}
+		},
+		"folder": {
+			"name": "LAS Master"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

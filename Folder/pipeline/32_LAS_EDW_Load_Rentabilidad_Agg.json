@@ -1,0 +1,293 @@
+{
+	"name": "32_LAS_EDW_Load_Rentabilidad_Agg",
+	"properties": {
+		"activities": [
+			{
+				"name": "SP Load LAS Real",
+				"description": "Load LAS aggregation",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP Recalculate Changes Rate Real",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[GRO_LAS].[usp_load_edw_factrentabilidadreal_las]",
+						"type": "Expression"
+					},
+					"storedProcedureParameters": {
+						"p_LoopBack": {
+							"value": "0",
+							"type": "Int16"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_SEML2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"LS_DB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "SP Load Aggregates Real",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP Load LAS Real",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[GRO_LAS].[usp_load_edw_agg_rentabilidadreal]",
+						"type": "Expression"
+					},
+					"storedProcedureParameters": {
+						"p_LoopBack": {
+							"value": "0",
+							"type": "Int16"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_SEML2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"LS_DB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "SP Load LAS Ppto",
+				"description": "Load LAS aggregation",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP Load Recalculate Changes Rate PPTO",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[GRO_LAS].[usp_load_edw_factrentabilidadppto_las]",
+						"type": "Expression"
+					},
+					"storedProcedureParameters": {
+						"p_LoopBack": {
+							"value": "0",
+							"type": "Int16"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_SEML2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"LS_DB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "SP Load Aggregates Ppto",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "SP Load LAS Ppto",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[GRO_LAS].[usp_load_edw_agg_rentabilidadppto]",
+						"type": "Expression"
+					},
+					"storedProcedureParameters": {
+						"p_LoopBack": {
+							"value": "0",
+							"type": "Int16"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_SEML2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"LS_DB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "SP Recalculate Changes Rate Real",
+				"description": "Recalcula lo necesario segun cambios en las tasas de cambio",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[GRO_LAS].[usp_load_edw_factrentabilidadreal_tc]",
+						"type": "Expression"
+					},
+					"storedProcedureParameters": {
+						"p_LoopBack": {
+							"value": "0",
+							"type": "Int16"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_SEML2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"LS_DB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "SP Load Recalculate Changes Rate PPTO",
+				"description": "Recalcula lo necesario segun cambios en las tasas de cambio",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[GRO_LAS].[usp_load_edw_factrentabilidadppto_tc]",
+						"type": "Expression"
+					},
+					"storedProcedureParameters": {
+						"p_LoopBack": {
+							"value": "0",
+							"type": "Int16"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_SEML2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"LS_DB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_SemanticDB": {
+				"type": "string",
+				"defaultValue": "SQLSEML2DVDNA"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			}
+		},
+		"folder": {
+			"name": "LAS Semantic"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

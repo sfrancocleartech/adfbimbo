@@ -1,0 +1,32 @@
+{
+	"name": "EDW_LAS_ARCHIVE_FILE",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_BlobStorage_Raw",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"BL_File": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "FILE SHARE AND BLOB"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "ARCHIVE",
+				"container": "fsdvdnalaseus2raw"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

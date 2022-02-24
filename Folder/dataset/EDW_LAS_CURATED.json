@@ -1,0 +1,54 @@
+{
+	"name": "EDW_LAS_CURATED",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQLSynapse_Curated",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"LS_Server": {
+					"value": "@dataset().SYNAPSE_Server",
+					"type": "Expression"
+				},
+				"LS_DB": {
+					"value": "@dataset().SYNAPSE_CuratedDB",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			},
+			"SYNAPSE_CuratedSchema": {
+				"type": "string",
+				"defaultValue": "dbo"
+			},
+			"SYNAPSE_CuratedTable": {
+				"type": "string",
+				"defaultValue": "master"
+			}
+		},
+		"folder": {
+			"name": "SYNAPSE"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().SYNAPSE_CuratedSchema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().SYNAPSE_CuratedTable",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

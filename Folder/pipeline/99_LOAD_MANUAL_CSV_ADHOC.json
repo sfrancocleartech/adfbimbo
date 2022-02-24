@@ -1,0 +1,71 @@
+{
+	"name": "99_LOAD_MANUAL_CSV_ADHOC",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data CSV Ad Hoc",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": false,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"tableOption": "autoCreate",
+						"disableMetricsCollection": true
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "CSV_MANUAL_ADHOC",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": "wsasadvcoedna.privatelink.sql.azuresynapse.net",
+							"SYNAPSE_SemanticDB": "SQLSEML2DVDNA",
+							"SYNAPSE_SemanticSchema": "GRO_LAS",
+							"SYNAPSE_SemanticTable": "EDW_DIM_CIF"
+						}
+					}
+				]
+			}
+		],
+		"folder": {
+			"name": "Manual"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

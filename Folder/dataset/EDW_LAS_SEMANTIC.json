@@ -1,0 +1,50 @@
+{
+	"name": "EDW_LAS_SEMANTIC",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQLSynapse_SEML2",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"LS_Server": {
+					"value": "@dataset().SYNAPSE_Server",
+					"type": "Expression"
+				},
+				"LS_DB": {
+					"value": "@dataset().SYNAPSE_SemanticDB",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"SYNAPSE_Server": {
+				"type": "string"
+			},
+			"SYNAPSE_SemanticDB": {
+				"type": "string"
+			},
+			"SYNAPSE_SemanticSchema": {
+				"type": "string"
+			},
+			"SYNAPSE_SemanticTable": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "SYNAPSE"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().SYNAPSE_SemanticSchema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().SYNAPSE_SemanticTable",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

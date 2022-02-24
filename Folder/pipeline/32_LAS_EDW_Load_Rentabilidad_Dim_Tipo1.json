@@ -1,0 +1,720 @@
+{
+	"name": "32_LAS_EDW_Load_Rentabilidad_Dim_Tipo1",
+	"properties": {
+		"description": "Data Flow para Dimensiones SCD Tipo 1",
+		"activities": [
+			{
+				"name": "Load Dim Pais",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Load Dim Moneda",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo1",
+						"type": "DataFlowReference",
+						"parameters": {
+							"keycol": {
+								"value": "'@{'Pais_Cd'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"NewMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatPais"
+							},
+							"ExistingMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Pais"
+							},
+							"sinkUpdate": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Pais"
+							},
+							"sinkInsert": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_Dim_Pais"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Load Dim Moneda",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo1",
+						"type": "DataFlowReference",
+						"parameters": {
+							"keycol": {
+								"value": "'@{'Moneda_Id'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"NewMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatMoneda"
+							},
+							"ExistingMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Moneda"
+							},
+							"sinkUpdate": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Moneda"
+							},
+							"sinkInsert": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_Dim_Moneda"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Load Dim Tasa Cambio Mensual",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Load Dim Ceve Agencia",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo1",
+						"type": "DataFlowReference",
+						"parameters": {
+							"keycol": {
+								"value": "'@{'Tasa_Cd'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"NewMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatMensualTasaCambio"
+							},
+							"ExistingMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_MensualTasaCambio"
+							},
+							"sinkUpdate": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_MensualTasaCambio"
+							},
+							"sinkInsert": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_MensualTasaCambio"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Load Dim Categoria Producto",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Load Dim Linea SubLinea",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo1",
+						"type": "DataFlowReference",
+						"parameters": {
+							"keycol": {
+								"value": "'@{'Categoria_Id'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"NewMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatCategoriaProducto"
+							},
+							"ExistingMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_CategoriaProducto"
+							},
+							"sinkUpdate": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_CategoriaProducto"
+							},
+							"sinkInsert": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_CategoriaProducto"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Load Dim Presentacion Producto",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo1",
+						"type": "DataFlowReference",
+						"parameters": {
+							"keycol": {
+								"value": "'@{'Presentacion_Id'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"NewMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatPresentacionProducto"
+							},
+							"ExistingMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_PresentacionProducto"
+							},
+							"sinkUpdate": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_PresentacionProducto"
+							},
+							"sinkInsert": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_PresentacionProducto"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Load Dim Marca Producto",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Load Dim Presentacion Producto",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo1",
+						"type": "DataFlowReference",
+						"parameters": {
+							"keycol": {
+								"value": "'@{'Marca_Id'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"NewMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatMarcaProducto"
+							},
+							"ExistingMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_MarcaProducto"
+							},
+							"sinkUpdate": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_MarcaProducto"
+							},
+							"sinkInsert": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_MarcaProducto"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Load Dim Linea SubLinea",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo1",
+						"type": "DataFlowReference",
+						"parameters": {
+							"keycol": {
+								"value": "'@{'LineaSubLinea_Cd'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"NewMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatLineaSubLineaProducto"
+							},
+							"ExistingMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_LineaSubLineaProducto"
+							},
+							"sinkUpdate": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_LineaSubLineaProducto"
+							},
+							"sinkInsert": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_LineaSubLineaProducto"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Load Dim Ceve Agencia",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "1.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "Dimensions_SCD_Tipo1",
+						"type": "DataFlowReference",
+						"parameters": {
+							"keycol": {
+								"value": "'@{'Agencia_Id'}'",
+								"type": "Expression"
+							}
+						},
+						"datasetParameters": {
+							"NewMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedDB": {
+									"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_CuratedSchema": "GRO_LAS",
+								"SYNAPSE_CuratedTable": "EDW_CatCeve"
+							},
+							"ExistingMembers": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Ceve"
+							},
+							"sinkUpdate": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Ceve"
+							},
+							"sinkInsert": {
+								"SYNAPSE_Server": {
+									"value": "@pipeline().parameters.SYNAPSE_Server",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticDB": {
+									"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+									"type": "Expression"
+								},
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_DIM_Ceve"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_SemanticDB": {
+				"type": "string",
+				"defaultValue": "SQLSEML2DVDNA"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			}
+		},
+		"folder": {
+			"name": "LAS Semantic"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

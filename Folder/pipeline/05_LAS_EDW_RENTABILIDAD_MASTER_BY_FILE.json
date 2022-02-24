@@ -1,0 +1,833 @@
+{
+	"name": "05_LAS_EDW_RENTABILIDAD_MASTER_BY_FILE",
+	"properties": {
+		"description": "ejecuta la rentabilidad utilizando los archivos de rentabilidad cargados",
+		"activities": [
+			{
+				"name": "Execute Landing Load",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Log Start Master",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "10_LAS_EDW_Rentabilidad_Landing",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"CNTRL_Server": {
+							"value": "@pipeline().parameters.CNTRL_Server",
+							"type": "Expression"
+						},
+						"CNTRL_DB": {
+							"value": "@pipeline().parameters.CNTRL_DB",
+							"type": "Expression"
+						},
+						"CNTRL_Schema": {
+							"value": "@pipeline().parameters.CNTRL_Schema",
+							"type": "Expression"
+						},
+						"CNTRL_Table": "ADF_PARAMETRIA_ARCHIVOS_ORIGEN",
+						"SYNAPSE_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"SYNAPSE_LandingDB": {
+							"value": "@pipeline().parameters.SYNAPSE_LandingDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Execute Curated Load",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Execute Landing Load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "20_LAS_EDW_Rentabilidad_Curated",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"CNTRL_Server": {
+							"value": "@pipeline().parameters.CNTRL_Server",
+							"type": "Expression"
+						},
+						"CNTRL_DB": {
+							"value": "@pipeline().parameters.CNTRL_DB",
+							"type": "Expression"
+						},
+						"CNTRL_Schema": {
+							"value": "@pipeline().parameters.CNTRL_Schema",
+							"type": "Expression"
+						},
+						"CNTRL_Table": "ADF_PARAMETRIA_MODELO_DATOS",
+						"SYNAPSE_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"SYNAPSE_LandingDB": {
+							"value": "@pipeline().parameters.SYNAPSE_LandingDB",
+							"type": "Expression"
+						},
+						"SYNAPSE_CuratedDB": {
+							"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Execute Semantic Load",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Execute Curated Load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "30_LAS_EDW_Rentabilidad_Semantic",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"CNTRL_Server": {
+							"value": "@pipeline().parameters.CNTRL_Server",
+							"type": "Expression"
+						},
+						"CNTRL_DB": {
+							"value": "@pipeline().parameters.CNTRL_DB",
+							"type": "Expression"
+						},
+						"CNTRL_Schema": {
+							"value": "@pipeline().parameters.CNTRL_Schema",
+							"type": "Expression"
+						},
+						"CNTRL_Table": "ADF_PARAMETRIA_MODELO_DATOS",
+						"SYNAPSE_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"SYNAPSE_SemanticDB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						},
+						"SYNAPSE_CuratedDB": {
+							"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Purge Landing",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Send Notification Fin Ok",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "99_LAS_EDW_Rentabilidad_Landing_Purge",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"CNTRL_Server": {
+							"value": "@pipeline().parameters.CNTRL_Server",
+							"type": "Expression"
+						},
+						"CNTRL_DB": {
+							"value": "@pipeline().parameters.CNTRL_DB",
+							"type": "Expression"
+						},
+						"CNTRL_Schema": {
+							"value": "@pipeline().parameters.CNTRL_Schema",
+							"type": "Expression"
+						},
+						"CNTRL_Table": "ADF_PARAMETRIA_ARCHIVOS_ORIGEN",
+						"SYNAPSE_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"SYNAPSE_LandingDB": {
+							"value": "@pipeline().parameters.SYNAPSE_LandingDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Purge Curated",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Send Notification Fin Ok",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "99_LAS_EDW_Rentabilidad_Curated_Purge",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"CNTRL_Server": {
+							"value": "@pipeline().parameters.CNTRL_Server",
+							"type": "Expression"
+						},
+						"CNTRL_DB": {
+							"value": "@pipeline().parameters.CNTRL_DB",
+							"type": "Expression"
+						},
+						"CNTRL_Schema": {
+							"value": "@pipeline().parameters.CNTRL_Schema",
+							"type": "Expression"
+						},
+						"CNTRL_Table": "ADF_PARAMETRIA_MODELO_DATOS",
+						"SYNAPSE_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"SYNAPSE_LandingDB": {
+							"value": "@pipeline().parameters.SYNAPSE_LandingDB",
+							"type": "Expression"
+						},
+						"SYNAPSE_CuratedDB": {
+							"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Send Notification Inicio",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-48.eastus2.logic.azure.com/workflows/b6e0490aa90b43b08f4b33136312eddc/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=DgycYHofH0HODsdYoGmPbjR21LnJGJcDqkv4aIYtnnM",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"value": "{\"ADF_Name\":\"INICIO: LAS PROFITABILITY MASTER\",\"EmailTo\": \"@{pipeline().parameters.EmailAlert}\",\"Body\":\"<html>\n<head>\n<style>\n#Data_Table {\n  font-family: Arial, Helvetica, sans-serif;\n  border-collapse: collapse;\n  width: 100%;\n}\n \n#Data_Table td, #Data_Table th {\n  border: 1px solid #ddd;\n  padding: 8px;\n}\n \n#Data_Table tr:nth-child(even){background-color: #f2f2f2;}\n \n#Data_Table tr:hover {background-color: #ddd;}\n \n#Data_Table th {\n  padding-top: 12px;\n  padding-bottom: 12px;\n  text-align: left;\n  background-color: #04AA6D;\n  color: white;\n}\n#Mensaje\n{\nbackground: linear-gradient(90deg, #1CB5E0 0%, #000851 100%);\ncolor: white;\n}\n</style>\n</head>\n<body>\n   \nInicia su ejecucion:<br>\nServicio ADF: @{pipeline().DataFactory}<br>\nPipeline: @{pipeline().Pipeline}<br>\nHora: @{pipeline().TriggerTime}<br>\n  \n<div id='Mensaje'>\n \n\n</div>\n \n</body>\n</html>\",\"Error\":\"LAS Grupo Bimbo\"}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Send Notification Fin Ok",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Execute Semantic Load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-48.eastus2.logic.azure.com/workflows/b6e0490aa90b43b08f4b33136312eddc/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=DgycYHofH0HODsdYoGmPbjR21LnJGJcDqkv4aIYtnnM",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"value": "{\"ADF_Name\":\"FIN: LAS PROFITABILITY MASTER\",\"EmailTo\":\"@{pipeline().parameters.EmailAlert}\",\"Body\":\"<html>\n<head>\n<style>\n#Data_Table {\n  font-family: Arial, Helvetica, sans-serif;\n  border-collapse: collapse;\n  width: 100%;\n}\n \n#Data_Table td, #Data_Table th {\n  border: 1px solid #ddd;\n  padding: 8px;\n}\n \n#Data_Table tr:nth-child(even){background-color: #f2f2f2;}\n \n#Data_Table tr:hover {background-color: #ddd;}\n \n#Data_Table th {\n  padding-top: 12px;\n  padding-bottom: 12px;\n  text-align: left;\n  background-color: #04AA6D;\n  color: white;\n}\n#Mensaje\n{\nbackground: linear-gradient(90deg, #1CB5E0 0%, #000851 100%);\ncolor: white;\n}\n</style>\n</head>\n<body>\n   \nFinaliza su ejecucion:<br>\nServicio ADF: @{pipeline().DataFactory}<br>\nPipeline: @{pipeline().Pipeline}<br>\nHora: @{pipeline().TriggerTime}<br>\n  \n<div id='Mensaje'>\n \n\n</div>\n \n</body>\n</html>\",\"Error\":\"LAS Grupo Bimbo\"}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Send Notification Fail Landing",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Execute Landing Load",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-48.eastus2.logic.azure.com/workflows/b6e0490aa90b43b08f4b33136312eddc/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=DgycYHofH0HODsdYoGmPbjR21LnJGJcDqkv4aIYtnnM",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"value": "{\"ADF_Name\":\"FALLA: LAS PROFITABILITY LANDING\",\"EmailTo\":\"@{pipeline().parameters.EmailAlert}\",\"Body\":\"<html>\n<head>\n<style>\n#Data_Table {\n  font-family: Arial, Helvetica, sans-serif;\n  border-collapse: collapse;\n  width: 100%;\n}\n \n#Data_Table td, #Data_Table th {\n  border: 1px solid #ddd;\n  padding: 8px;\n}\n \n#Data_Table tr:nth-child(even){background-color: #f2f2f2;}\n \n#Data_Table tr:hover {background-color: #ddd;}\n \n#Data_Table th {\n  padding-top: 12px;\n  padding-bottom: 12px;\n  text-align: left;\n  background-color: #04AA6D;\n  color: white;\n}\n#Mensaje\n{\nbackground: linear-gradient(90deg, #1CB5E0 0%, #000851 100%);\ncolor: white;\n}\n</style>\n</head>\n<body>\n   \nFalla de la carga de archivos landing:<br>\nServicio ADF: @{pipeline().DataFactory}<br>\nPipeline: @{pipeline().Pipeline}<br>\nHora: @{pipeline().TriggerTime}<br>\n\nError: @{activity('Execute Landing Load').error.message} <br>\nChequear ADF Monitor o CNTRL_EDW_LAS.ADF_PIPELINE_ERRORS para obtener el detalle del error.\n\n<div id='Mensaje'>\n \n\n</div>\n \n</body>\n</html>\",\"Error\":\"LAS Grupo Bimbo\"}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Send Notification Fail Curated",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Execute Curated Load",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-48.eastus2.logic.azure.com/workflows/b6e0490aa90b43b08f4b33136312eddc/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=DgycYHofH0HODsdYoGmPbjR21LnJGJcDqkv4aIYtnnM",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"value": "{\"ADF_Name\":\"FALLA: LAS PROFITABILITY CURATED\",\"EmailTo\":\"@{pipeline().parameters.EmailAlert}\",\"Body\":\"<html>\n<head>\n<style>\n#Data_Table {\n  font-family: Arial, Helvetica, sans-serif;\n  border-collapse: collapse;\n  width: 100%;\n}\n \n#Data_Table td, #Data_Table th {\n  border: 1px solid #ddd;\n  padding: 8px;\n}\n \n#Data_Table tr:nth-child(even){background-color: #f2f2f2;}\n \n#Data_Table tr:hover {background-color: #ddd;}\n \n#Data_Table th {\n  padding-top: 12px;\n  padding-bottom: 12px;\n  text-align: left;\n  background-color: #04AA6D;\n  color: white;\n}\n#Mensaje\n{\nbackground: linear-gradient(90deg, #1CB5E0 0%, #000851 100%);\ncolor: white;\n}\n</style>\n</head>\n<body>\n   \nFalla de la carga de datos Curated:<br>\nServicio ADF: @{pipeline().DataFactory}<br>\nPipeline: @{pipeline().Pipeline}<br>\nHora: @{pipeline().TriggerTime}<br>\n\nError: @{activity('Execute Curated Load').error.message} <br>\nChequear ADF Monitor o CNTRL_EDW_LAS.ADF_PIPELINE_ERRORS para obtener el detalle del error.\n\n<div id='Mensaje'>\n \n\n</div>\n \n</body>\n</html>\",\"Error\":\"LAS Grupo Bimbo\"}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Send Notification Fail Semantinc",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Execute Semantic Load",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-48.eastus2.logic.azure.com/workflows/b6e0490aa90b43b08f4b33136312eddc/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=DgycYHofH0HODsdYoGmPbjR21LnJGJcDqkv4aIYtnnM",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"value": "{\"ADF_Name\":\"FALLA: LAS PROFITABILITY SEMANTIC\",\"EmailTo\":\"@{pipeline().parameters.EmailAlert}\",\"Body\":\"<html>\n<head>\n<style>\n#Data_Table {\n  font-family: Arial, Helvetica, sans-serif;\n  border-collapse: collapse;\n  width: 100%;\n}\n \n#Data_Table td, #Data_Table th {\n  border: 1px solid #ddd;\n  padding: 8px;\n}\n \n#Data_Table tr:nth-child(even){background-color: #f2f2f2;}\n \n#Data_Table tr:hover {background-color: #ddd;}\n \n#Data_Table th {\n  padding-top: 12px;\n  padding-bottom: 12px;\n  text-align: left;\n  background-color: #04AA6D;\n  color: white;\n}\n#Mensaje\n{\nbackground: linear-gradient(90deg, #1CB5E0 0%, #000851 100%);\ncolor: white;\n}\n</style>\n</head>\n<body>\n   \nFalla de la carga de datos Semantic:<br>\nServicio ADF: @{pipeline().DataFactory}<br>\nPipeline: @{pipeline().Pipeline}<br>\nHora: @{pipeline().TriggerTime}<br>\n \nError: @{activity('Execute Semantic Load').error.message} <br>\nChequear ADF Monitor o CNTRL_EDW_LAS.ADF_PIPELINE_ERRORS para obtener el detalle del error.\n\n<div id='Mensaje'>\n \n\n</div>\n \n</body>\n</html>\",\"Error\":\"LAS Grupo Bimbo\"}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Log Start Master",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Send Notification Inicio",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[CNTRL_EDW_LAS].[usp_UpdateAdfLogMasterTable]",
+					"storedProcedureParameters": {
+						"DataFactory_Name": {
+							"value": {
+								"value": "@pipeline().DataFactory",
+								"type": "Expression"
+							}
+						},
+						"Pipeline_Name": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							}
+						},
+						"RunId": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							}
+						},
+						"TriggerType": {
+							"value": {
+								"value": "@pipeline().TriggerType",
+								"type": "Expression"
+							}
+						},
+						"TriggerId": {
+							"value": {
+								"value": "@pipeline().TriggerId",
+								"type": "Expression"
+							}
+						},
+						"TriggerName": {
+							"value": {
+								"value": "@pipeline().TriggerName",
+								"type": "Expression"
+							}
+						},
+						"TriggerTime": {
+							"value": {
+								"value": "@pipeline().TriggerTime",
+								"type": "Expression"
+							}
+						},
+						"Execution_Status": {
+							"value": "Running"
+						},
+						"Type": {
+							"value": "I"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_AuditControl",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": "corpdnasqldv1.database.windows.net",
+						"LS_DB": "DBCORPDNADV1"
+					}
+				}
+			},
+			{
+				"name": "Log End  Master",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Send Notification Fin Ok",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[CNTRL_EDW_LAS].[usp_UpdateAdfLogMasterTable]",
+					"storedProcedureParameters": {
+						"DataFactory_Name": {
+							"value": {
+								"value": "@pipeline().DataFactory",
+								"type": "Expression"
+							}
+						},
+						"Pipeline_Name": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							}
+						},
+						"RunId": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							}
+						},
+						"TriggerType": {
+							"value": {
+								"value": "@pipeline().TriggerType",
+								"type": "Expression"
+							}
+						},
+						"TriggerId": {
+							"value": {
+								"value": "@pipeline().TriggerId",
+								"type": "Expression"
+							}
+						},
+						"TriggerName": {
+							"value": {
+								"value": "@pipeline().TriggerName",
+								"type": "Expression"
+							}
+						},
+						"TriggerTime": {
+							"value": {
+								"value": "@pipeline().TriggerTime",
+								"type": "Expression"
+							}
+						},
+						"Execution_Status": {
+							"value": "Complete"
+						},
+						"Type": {
+							"value": "U"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_AuditControl",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": "corpdnasqldv1.database.windows.net",
+						"LS_DB": "DBCORPDNADV1"
+					}
+				}
+			},
+			{
+				"name": "Log Fail Master Landing",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Send Notification Fail Landing",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[CNTRL_EDW_LAS].[usp_UpdateAdfLogMasterTable]",
+					"storedProcedureParameters": {
+						"DataFactory_Name": {
+							"value": {
+								"value": "@pipeline().DataFactory",
+								"type": "Expression"
+							}
+						},
+						"Pipeline_Name": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							}
+						},
+						"RunId": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							}
+						},
+						"TriggerType": {
+							"value": {
+								"value": "@pipeline().TriggerType",
+								"type": "Expression"
+							}
+						},
+						"TriggerId": {
+							"value": {
+								"value": "@pipeline().TriggerId",
+								"type": "Expression"
+							}
+						},
+						"TriggerName": {
+							"value": {
+								"value": "@pipeline().TriggerName",
+								"type": "Expression"
+							}
+						},
+						"TriggerTime": {
+							"value": {
+								"value": "@pipeline().TriggerTime",
+								"type": "Expression"
+							}
+						},
+						"Execution_Status": {
+							"value": "Failed"
+						},
+						"Type": {
+							"value": "U"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_AuditControl",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": "corpdnasqldv1.database.windows.net",
+						"LS_DB": "DBCORPDNADV1"
+					}
+				}
+			},
+			{
+				"name": "Log Fail Master Curated",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Send Notification Fail Curated",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[CNTRL_EDW_LAS].[usp_UpdateAdfLogMasterTable]",
+					"storedProcedureParameters": {
+						"DataFactory_Name": {
+							"value": {
+								"value": "@pipeline().DataFactory",
+								"type": "Expression"
+							}
+						},
+						"Pipeline_Name": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							}
+						},
+						"RunId": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							}
+						},
+						"TriggerType": {
+							"value": {
+								"value": "@pipeline().TriggerType",
+								"type": "Expression"
+							}
+						},
+						"TriggerId": {
+							"value": {
+								"value": "@pipeline().TriggerId",
+								"type": "Expression"
+							}
+						},
+						"TriggerName": {
+							"value": {
+								"value": "@pipeline().TriggerName",
+								"type": "Expression"
+							}
+						},
+						"TriggerTime": {
+							"value": {
+								"value": "@pipeline().TriggerTime",
+								"type": "Expression"
+							}
+						},
+						"Execution_Status": {
+							"value": "Failed"
+						},
+						"Type": {
+							"value": "U"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_AuditControl",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": "corpdnasqldv1.database.windows.net",
+						"LS_DB": "DBCORPDNADV1"
+					}
+				}
+			},
+			{
+				"name": "Log Fail Master Semantic",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Send Notification Fail Semantinc",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[CNTRL_EDW_LAS].[usp_UpdateAdfLogMasterTable]",
+					"storedProcedureParameters": {
+						"DataFactory_Name": {
+							"value": {
+								"value": "@pipeline().DataFactory",
+								"type": "Expression"
+							}
+						},
+						"Pipeline_Name": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							}
+						},
+						"RunId": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							}
+						},
+						"TriggerType": {
+							"value": {
+								"value": "@pipeline().TriggerType",
+								"type": "Expression"
+							}
+						},
+						"TriggerId": {
+							"value": {
+								"value": "@pipeline().TriggerId",
+								"type": "Expression"
+							}
+						},
+						"TriggerName": {
+							"value": {
+								"value": "@pipeline().TriggerName",
+								"type": "Expression"
+							}
+						},
+						"TriggerTime": {
+							"value": {
+								"value": "@pipeline().TriggerTime",
+								"type": "Expression"
+							}
+						},
+						"Execution_Status": {
+							"value": "Failed"
+						},
+						"Type": {
+							"value": "U"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_AuditControl",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": "corpdnasqldv1.database.windows.net",
+						"LS_DB": "DBCORPDNADV1"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"CNTRL_Server": {
+				"type": "string",
+				"defaultValue": "corpdnasqldv1.database.windows.net"
+			},
+			"CNTRL_DB": {
+				"type": "string",
+				"defaultValue": "DBCORPDNADV1"
+			},
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_LandingDB": {
+				"type": "string",
+				"defaultValue": "SQLLANDINGDVDNA"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			},
+			"SYNAPSE_SemanticDB": {
+				"type": "string",
+				"defaultValue": "SQLSEML2DVDNA"
+			},
+			"CNTRL_Schema": {
+				"type": "string",
+				"defaultValue": "CNTRL_EDW_LAS"
+			},
+			"EmailAlert": {
+				"type": "string",
+				"defaultValue": "mauro.beneitez@clear-bi.com"
+			}
+		},
+		"folder": {
+			"name": "LAS Master"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:29Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

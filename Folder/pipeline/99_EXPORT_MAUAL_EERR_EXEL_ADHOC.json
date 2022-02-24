@@ -1,0 +1,91 @@
+{
+	"name": "99_EXPORT_MAUAL_EERR_EXEL_ADHOC",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data csv Ad Hoc",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": {
+							"value": "select 'REAL' as Tipo, datareal.* from [GRO_LAS].[EDW_PBI_EstRes_RentabilidadReal] datareal\nwhere periodo_id in (@{pipeline().parameters.Periodos})\nunion all\nselect 'PPTO' as Tipo, datappto.* from [GRO_LAS].[EDW_PBI_EstRes_RentabilidadPpto] datappto\nwhere periodo_id in (@{pipeline().parameters.Periodos})",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobStorageWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": "wsasadvcoedna.privatelink.sql.azuresynapse.net",
+							"SYNAPSE_SemanticDB": "SQLSEML2DVDNA",
+							"SYNAPSE_SemanticSchema": "GRO_LAS",
+							"SYNAPSE_SemanticTable": "[GRO_LAS].[EDW_PBI_EstRes_RentabilidadPpto]"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "CSV_MANUAL_ADHOC",
+						"type": "DatasetReference",
+						"parameters": {
+							"CSV_FILE": {
+								"value": "@pipeline().parameters.ArchivoExport",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"Periodos": {
+				"type": "string",
+				"defaultValue": "202110"
+			},
+			"ArchivoExport": {
+				"type": "string",
+				"defaultValue": "EERR_OCTUBRE.csv"
+			}
+		},
+		"folder": {
+			"name": "Manual"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,573 @@
+{
+	"name": "20_LAS_EDW_Rentabilidad_Curated",
+	"properties": {
+		"description": "Copy files in share folder to landing in synapse",
+		"activities": [
+			{
+				"name": "Lookup Table List",
+				"description": "Lee la paremetria para iterar sobre todo lo que se quiera cargar.",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Set TimeStamp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT [EsquemaLanding],\n\t[TablaLanding],\n\t[EsquemaCurated] ,\n\t[TablaCurated] ,\n\t[EsquemaSemantic],\n\t[TablaSemantic] \n  FROM [CNTRL_EDW_LAS].[ADF_PARAMETRIA_MODELO_DATOS]\n  WHERE Activo = 1\nORDER BY OrdenEjecucion",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "EDW_LAS_PARAMETRIA_MODELO_DATOS",
+						"type": "DatasetReference",
+						"parameters": {
+							"CNTRL_Server": {
+								"value": "@pipeline().parameters.CNTRL_Server",
+								"type": "Expression"
+							},
+							"CNTRL_DB": {
+								"value": "@pipeline().parameters.CNTRL_DB",
+								"type": "Expression"
+							},
+							"CNTRL_Schema": {
+								"value": "@pipeline().parameters.CNTRL_Schema",
+								"type": "Expression"
+							},
+							"CNTRL_Table": {
+								"value": "@pipeline().parameters.CNTRL_Table",
+								"type": "Expression"
+							}
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "For Each Load Config",
+				"description": "Para cada parametria activa vamos a ir a buscar y cargar los datos desde landing.",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup Table List",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup Table List').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Load Curated Stg",
+							"description": "Load Curated zone stage tables",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlDWSource",
+									"sqlReaderQuery": {
+										"value": "SELECT * from @{item().EsquemaLanding}.@{item().TablaLanding}",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "SqlDWSink",
+									"preCopyScript": {
+										"value": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'@{item().EsquemaCurated}.stg_@{item().TablaCurated}') AND type in (N'U'))\nTRUNCATE TABLE @{item().EsquemaCurated}.[stg_@{item().TablaCurated}]; ",
+										"type": "Expression"
+									},
+									"tableOption": "autoCreate",
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "EWD_LAS_LANDING",
+									"type": "DatasetReference",
+									"parameters": {
+										"SYNAPSE_Server": {
+											"value": "@pipeline().parameters.SYNAPSE_Server",
+											"type": "Expression"
+										},
+										"SYNAPSE_LandingDB": {
+											"value": "@pipeline().parameters.SYNAPSE_LandingDB",
+											"type": "Expression"
+										},
+										"SYNAPSE_LandingSchema": {
+											"value": "@item().EsquemaLanding",
+											"type": "Expression"
+										},
+										"SYNAPSE_LandingTable": {
+											"value": "@item().TablaLanding",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "EDW_LAS_CURATED",
+									"type": "DatasetReference",
+									"parameters": {
+										"SYNAPSE_Server": {
+											"value": "@pipeline().parameters.SYNAPSE_Server",
+											"type": "Expression"
+										},
+										"SYNAPSE_CuratedDB": {
+											"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+											"type": "Expression"
+										},
+										"SYNAPSE_CuratedSchema": {
+											"value": "@item().EsquemaCurated",
+											"type": "Expression"
+										},
+										"SYNAPSE_CuratedTable": {
+											"value": "@concat('stg_',item().TablaCurated)",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "SP Load Curated",
+							"description": "Load curated zone final tables",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Load Curated Stg",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": {
+									"value": "@concat('GRO_LAS.usp_load_',toLower(item().TablaCurated))",
+									"type": "Expression"
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_SQLSynapse_Curated",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"LS_Server": {
+										"value": "@pipeline().parameters.SYNAPSE_Server",
+										"type": "Expression"
+									},
+									"LS_DB": {
+										"value": "@pipeline().parameters.SYNAPSE_CuratedDB",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "USP Update Log",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "SP Load Curated",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[CNTRL_EDW_LAS].[usp_UpdateAdfLogTable]",
+								"storedProcedureParameters": {
+									"DataFactory_Name": {
+										"value": {
+											"value": "@pipeline().DataFactory",
+											"type": "Expression"
+										}
+									},
+									"Pipeline_Name": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										}
+									},
+									"RunId": {
+										"value": {
+											"value": "@pipeline()?.TriggeredByPipelineRunId",
+											"type": "Expression"
+										}
+									},
+									"Source": {
+										"value": {
+											"value": "@item().TablaLanding",
+											"type": "Expression"
+										}
+									},
+									"Destination": {
+										"value": {
+											"value": "@item().TablaCurated",
+											"type": "Expression"
+										}
+									},
+									"TriggerType": {
+										"value": {
+											"value": "@pipeline().TriggerType",
+											"type": "Expression"
+										}
+									},
+									"TriggerId": {
+										"value": {
+											"value": "@pipeline().TriggerId",
+											"type": "Expression"
+										}
+									},
+									"TriggerName": {
+										"value": {
+											"value": "@pipeline().TriggerName",
+											"type": "Expression"
+										}
+									},
+									"TriggerTime": {
+										"value": {
+											"value": "@pipeline().TriggerTime",
+											"type": "Expression"
+										}
+									},
+									"rowsCopied": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.rowsCopied",
+											"type": "Expression"
+										}
+									},
+									"DataRead": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.rowsRead",
+											"type": "Expression"
+										}
+									},
+									"No_ParallelCopies": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.usedParallelCopies",
+											"type": "Expression"
+										}
+									},
+									"copyDuration_in_secs": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.copyDuration",
+											"type": "Expression"
+										}
+									},
+									"effectiveIntegrationRuntime": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.effectiveIntegrationRuntime",
+											"type": "Expression"
+										}
+									},
+									"Source_Type": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.executionDetails[0].source.type",
+											"type": "Expression"
+										}
+									},
+									"Sink_Type": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.executionDetails[0].sink.type",
+											"type": "Expression"
+										}
+									},
+									"Execution_Status": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.executionDetails[0].status",
+											"type": "Expression"
+										}
+									},
+									"CopyActivity_Start_Time": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.executionDetails[0].start",
+											"type": "Expression"
+										}
+									},
+									"CopyActivity_End_Time": {
+										"value": {
+											"value": "@utcnow()",
+											"type": "Expression"
+										}
+									},
+									"CopyActivity_queuingDuration_in_secs": {
+										"value": {
+											"value": "@{activity('Load Curated Stg').output.executionDetails[0]. detailedDurations.queuingDuration}",
+											"type": "Expression"
+										}
+									},
+									"CopyActivity_transferDuration_in_secs": {
+										"value": {
+											"value": "@{activity('Load Curated Stg').output.executionDetails[0]. detailedDurations.transferDuration}",
+											"type": "Expression"
+										}
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_SQL_AuditControl",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"LS_Server": "corpdnasqldv1.database.windows.net",
+									"LS_DB": "DBCORPDNADV1"
+								}
+							}
+						},
+						{
+							"name": "USP Update Failure",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "SP Load Curated",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[CNTRL_EDW_LAS].[usp_UpdateAdfErrorTable]",
+								"storedProcedureParameters": {
+									"DataFactory_Name": {
+										"value": {
+											"value": "@pipeline().DataFactory",
+											"type": "Expression"
+										}
+									},
+									"Pipeline_Name": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										}
+									},
+									"RunId": {
+										"value": {
+											"value": "@pipeline()?.TriggeredByPipelineRunId",
+											"type": "Expression"
+										}
+									},
+									"Source": {
+										"value": {
+											"value": "@item().TablaLanding",
+											"type": "Expression"
+										}
+									},
+									"Destination": {
+										"value": {
+											"value": "@item().TablaCurated",
+											"type": "Expression"
+										}
+									},
+									"TriggerType": {
+										"value": {
+											"value": "@pipeline().TriggerType",
+											"type": "Expression"
+										}
+									},
+									"TriggerId": {
+										"value": {
+											"value": "@pipeline().TriggerId",
+											"type": "Expression"
+										}
+									},
+									"TriggerName": {
+										"value": {
+											"value": "@pipeline().TriggerName",
+											"type": "Expression"
+										}
+									},
+									"TriggerTime": {
+										"value": {
+											"value": "@pipeline().TriggerTime",
+											"type": "Expression"
+										}
+									},
+									"No_ParallelCopies": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.usedParallelCopies",
+											"type": "Expression"
+										}
+									},
+									"copyDuration_in_secs": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.copyDuration",
+											"type": "Expression"
+										}
+									},
+									"effectiveIntegrationRuntime": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.effectiveIntegrationRuntime",
+											"type": "Expression"
+										}
+									},
+									"Source_Type": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.executionDetails[0].source.type",
+											"type": "Expression"
+										}
+									},
+									"Sink_Type": {
+										"value": {
+											"value": "@activity('Load Curated Stg').output.executionDetails[0].sink.type",
+											"type": "Expression"
+										}
+									},
+									"Execution_Status": {
+										"value": "Failed"
+									},
+									"ErrorCode": {
+										"value": {
+											"value": "@activity('SP Load Curated').error.errorCode",
+											"type": "Expression"
+										}
+									},
+									"ErrorDescription": {
+										"value": {
+											"value": "@activity('SP Load Curated').error.message",
+											"type": "Expression"
+										}
+									},
+									"ErrorLoggedTIme": {
+										"value": {
+											"value": "@utcnow()",
+											"type": "Expression"
+										}
+									},
+									"FailureType": {
+										"value": {
+											"value": "'SP ERROR'",
+											"type": "Expression"
+										}
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_SQL_AuditControl",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"LS_Server": "corpdnasqldv1.database.windows.net",
+									"LS_DB": "DBCORPDNADV1"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Set TimeStamp",
+				"description": "set the time stamp",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Timestamps",
+					"value": {
+						"value": "@utcnow()",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"CNTRL_Server": {
+				"type": "string",
+				"defaultValue": "corpdnasqldv1.database.windows.net"
+			},
+			"CNTRL_DB": {
+				"type": "string",
+				"defaultValue": "DBCORPDNADV1"
+			},
+			"CNTRL_Schema": {
+				"type": "string",
+				"defaultValue": "CNTRL_EDW_LAS"
+			},
+			"CNTRL_Table": {
+				"type": "string",
+				"defaultValue": "ADF_PARAMETRIA_MODELO_DATOS"
+			},
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_LandingDB": {
+				"type": "string",
+				"defaultValue": "SQLLANDINGDVDNA"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			}
+		},
+		"variables": {
+			"Timestamps": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "LAS Curated"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

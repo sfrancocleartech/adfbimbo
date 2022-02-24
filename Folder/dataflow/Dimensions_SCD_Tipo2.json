@@ -1,0 +1,75 @@
+{
+	"name": "Dimensions_SCD_Tipo2",
+	"properties": {
+		"folder": {
+			"name": "GenericSCD"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EDW_LAS_CURATED",
+						"type": "DatasetReference"
+					},
+					"name": "GenericInput"
+				},
+				{
+					"dataset": {
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference"
+					},
+					"name": "ExistingDimensionTable"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference"
+					},
+					"name": "DimensionTableSink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "NewAndUpdatedRows"
+				},
+				{
+					"name": "AddHashInput"
+				},
+				{
+					"name": "AddHashExisting"
+				},
+				{
+					"name": "AddDimensionColumns"
+				},
+				{
+					"name": "FilterForUpdatedValues"
+				},
+				{
+					"name": "UpdateObsolete"
+				},
+				{
+					"name": "DropUnwantedColsInput"
+				},
+				{
+					"name": "UnionAllData"
+				},
+				{
+					"name": "MarkAsUpdate"
+				},
+				{
+					"name": "DropUnwantedColumns"
+				},
+				{
+					"name": "MarkAsInsert"
+				},
+				{
+					"name": "FilterForActive"
+				}
+			],
+			"script": "parameters{\n\tPrimaryKey as string (\"\"),\n\tColumns as string (\"\")\n}\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> GenericInput\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> ExistingDimensionTable\nAddHashInput, AddHashExisting exists(AddHashInput@id_hash == AddHashExisting@id_hash\n\t&& AddHashInput@columns_hash == AddHashExisting@columns_hash,\n\tnegate:true,\n\tbroadcast: 'auto')~> NewAndUpdatedRows\nGenericInput derive(id_hash = md5(byName($PrimaryKey)),\n\t\tcolumns_hash = md5(byNames(split($Columns,',')))) ~> AddHashInput\nFilterForActive derive(id_hash = md5(byNames(split($PrimaryKey,','))),\n\t\tcolumns_hash = md5(byNames(split($Columns,',')))) ~> AddHashExisting\nNewAndUpdatedRows derive(Estado_Ind = 1,\n\t\tFechaInicio = currentDate(),\n\t\tFechaFin = toDate(toString('3000-01-01')),\n\t\tFechaCrea = currentDate(),\n\t\tFechaUltMod = currentDate(),\n\t\tUsuarioCrea = 'USR_LAS_ETL',\n\t\tUsuarioUltMod = 'USR_LAS_ETL') ~> AddDimensionColumns\nAddHashExisting, NewAndUpdatedRows exists(AddHashExisting@id_hash == AddHashInput@id_hash,\n\tnegate:false,\n\tbroadcast: 'auto')~> FilterForUpdatedValues\nFilterForUpdatedValues derive(Estado_Ind = 0,\n\t\tFechaFin = currentDate(),\n\t\tFechaUltMod = currentDate(),\n\t\tUsuarioUltMod = 'USR_LAS_ETL') ~> UpdateObsolete\nAddDimensionColumns select(mapColumn(\n\t\teach(match(!in(['id_hash','columns_hash','MaxSurrogateKey'],name)))\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DropUnwantedColsInput\nMarkAsInsert, DropUnwantedColumns union(byName: true)~> UnionAllData\nUpdateObsolete alterRow(updateIf(true())) ~> MarkAsUpdate\nMarkAsUpdate select(mapColumn(\n\t\teach(match(!in(['id_hash','columns_hash','MaxSurrogateKey'],name)))\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> DropUnwantedColumns\nDropUnwantedColsInput alterRow(insertIf(true())) ~> MarkAsInsert\nExistingDimensionTable filter(toInteger(byName('Estado_Ind')) == 1) ~> FilterForActive\nUnionAllData sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:[($PrimaryKey)],\n\tformat: 'table',\n\tstaged: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> DimensionTableSink"
+		}
+	}
+}

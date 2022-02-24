@@ -1,0 +1,626 @@
+{
+	"name": "34_LAS_EDW_Load_Gastos_Facts",
+	"properties": {
+		"description": "Carga de Facts de data gastos account analysis desde ocloud semantic a las edw semantic",
+		"activities": [
+			{
+				"name": "Load stg fact gastos account global",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlDWSource",
+						"sqlReaderQuery": "SELECT\n\t'BP' as Pais_Cd,\n        SEGMENT1 as EL_Cd,\n        ANIOMES as Periodo_Id,\n\t[COST CENTER LEVEL2],\n\t[COST CENTER LEVEL3],\n\t[COST CENTER VALUE],\n\t[COST CENTER DESCRIPTION],\n\t[ACCOUNT LEVEL1],\n\t[ACCOUNT LEVEL2],\n\t[ACCOUNT LEVEL3],\n\tACCOUNT,\n\t[ACCOUNT DESCRIPTION],\n\t[COMBINATION SEGMENTS],\n\t[SOURCE],\n\tBATCH,\n\tJOURNAL,\n\t[CATEGORY (GL)],\n\t[ACCOUNT PERIOD],\n\t[ACCOUNT DATE],\n\t[POSTING STATUS],\n\tLINE,\n\t[LINE DESCRIPTION],\n\tBUYER,\n\t[PO NUMBER],\n\t[PERFORMED BY],\n\tRECEIPT,\n\t[INVOICE DATE],\n\tINVOICE,\n\t[SUPPLIER OR CUSTOMER ID],\n\t[SUPPLIER OR CUSTOMER],\n\tCURRENCY,\n\t[ENTERED DR],\n\t[ENTERED CR],\n\t[ACCOUNTED DR],\n\t[ACCOUNTED CR],\n\t[PERIOD ACTIVITY],\n\tFila,\n\t[POSTED DATE],\n\tLlave\nFROM\n\tSQLSEMANTICDVOCLOUD.MGT_PER_OC.account_global\nWHERE [POSTED DATE] >= GETDATE()-15",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlDWSink",
+						"preCopyScript": {
+							"value": "IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'GRO_LAS.stg_EDW_FACTL2_GastosAccountGlobal') AND type in (N'U'))\nTRUNCATE TABLE GRO_LAS.stg_EDW_FACTL2_GastosAccountGlobal; ",
+							"type": "Expression"
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "Pais_Cd",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Pais_Cd",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "EL_Cd",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "EL_Cd",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "Periodo_Id",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "Periodo_Id",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 0,
+									"precision": 18
+								}
+							},
+							{
+								"source": {
+									"name": "COST CENTER LEVEL2",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Cost_Center_Level2",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "COST CENTER LEVEL3",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Cost_Center_Level3",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "COST CENTER VALUE",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Cost_Center_Value",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "COST CENTER DESCRIPTION",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Cost_Center_Description",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ACCOUNT LEVEL1",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Account_Level1",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ACCOUNT LEVEL2",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Account_Level2",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ACCOUNT LEVEL3",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Account_Level3",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ACCOUNT",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Account",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ACCOUNT DESCRIPTION",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Account_Description",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "COMBINATION SEGMENTS",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Combination_Segment",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "SOURCE",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Source",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "BATCH",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Batch",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "JOURNAL",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Journal",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "CATEGORY (GL)",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Category_GL",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ACCOUNT PERIOD",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Account_Period",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ACCOUNT DATE",
+									"type": "DateTime",
+									"physicalType": "date"
+								},
+								"sink": {
+									"name": "Account_Date",
+									"type": "DateTime",
+									"physicalType": "date"
+								}
+							},
+							{
+								"source": {
+									"name": "POSTING STATUS",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Posting_Status",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "LINE",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Line",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "LINE DESCRIPTION",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Line_Description",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "BUYER",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Buyer",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "PO NUMBER",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "PO_Number",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "PERFORMED BY",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Performed_By",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "RECEIPT",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Receipt",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "INVOICE DATE",
+									"type": "DateTime",
+									"physicalType": "date"
+								},
+								"sink": {
+									"name": "Invoice_Date",
+									"type": "DateTime",
+									"physicalType": "date"
+								}
+							},
+							{
+								"source": {
+									"name": "INVOICE",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Invoice",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "SUPPLIER OR CUSTOMER ID",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Supplier_or_Customer_Id",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "SUPPLIER OR CUSTOMER",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Supplier_or_Customer",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "CURRENCY",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Moneda_Cd",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							},
+							{
+								"source": {
+									"name": "ENTERED DR",
+									"type": "Single",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "Entered_Dr",
+									"type": "Single",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "ENTERED CR",
+									"type": "Single",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "Entered_Cr",
+									"type": "Single",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "ACCOUNTED DR",
+									"type": "Single",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "Accounted_Dr",
+									"type": "Single",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "ACCOUNTED CR",
+									"type": "Single",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "Accounted_Cr",
+									"type": "Single",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "PERIOD ACTIVITY",
+									"type": "Single",
+									"physicalType": "float"
+								},
+								"sink": {
+									"name": "Period_Activity",
+									"type": "Single",
+									"physicalType": "float"
+								}
+							},
+							{
+								"source": {
+									"name": "Fila",
+									"type": "Int32",
+									"physicalType": "int"
+								},
+								"sink": {
+									"name": "Fila",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 0,
+									"precision": 18
+								}
+							},
+							{
+								"source": {
+									"name": "POSTED DATE",
+									"type": "DateTime",
+									"physicalType": "date"
+								},
+								"sink": {
+									"name": "Posted_Date",
+									"type": "DateTime",
+									"physicalType": "date"
+								}
+							},
+							{
+								"source": {
+									"name": "Llave",
+									"type": "String",
+									"physicalType": "varchar"
+								},
+								"sink": {
+									"name": "Llave",
+									"type": "String",
+									"physicalType": "varchar"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "OCLOUD_GASTOS_SEMANTIC",
+						"type": "DatasetReference",
+						"parameters": {
+							"OCLOUD_SYNAPSE_Server": {
+								"value": "@pipeline().parameters.OCLOUD_SYNAPSE_Server",
+								"type": "Expression"
+							},
+							"OCLOUD_SYNAPSE_SemanticDB": {
+								"value": "@pipeline().parameters.OCLOUD_SYNAPSE_SemanticDB",
+								"type": "Expression"
+							},
+							"OCLOUD_SYNAPSE_SemanticSchema": "MGT_PER_OC",
+							"OCLOUD_SYNAPSE_SemanticTable": "account_global"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": {
+								"value": "@pipeline().parameters.SYNAPSE_Server",
+								"type": "Expression"
+							},
+							"SYNAPSE_SemanticDB": {
+								"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+								"type": "Expression"
+							},
+							"SYNAPSE_SemanticSchema": {
+								"value": "GRO_LAS",
+								"type": "Expression"
+							},
+							"SYNAPSE_SemanticTable": {
+								"value": "stg_EDW_FACTL2_GastosAccountGlobal",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "SP Load Fact Account Global",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Load stg fact gastos account global",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": {
+						"value": "[GRO_LAS].[usp_load_edw_factgastosaccount]",
+						"type": "Expression"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_SEML2",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": {
+							"value": "@pipeline().parameters.SYNAPSE_Server",
+							"type": "Expression"
+						},
+						"LS_DB": {
+							"value": "@pipeline().parameters.SYNAPSE_SemanticDB",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"parameters": {
+			"OCLOUD_SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvocloudcorpeus2.sql.azuresynapse.net"
+			},
+			"OCLOUD_SYNAPSE_SemanticDB": {
+				"type": "string",
+				"defaultValue": "SQLSEMANTICDVOCLOUD"
+			},
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_SemanticDB": {
+				"type": "string",
+				"defaultValue": "SQLSEML2DVDNA"
+			}
+		},
+		"folder": {
+			"name": "LAS Semantic"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-10T14:31:47Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

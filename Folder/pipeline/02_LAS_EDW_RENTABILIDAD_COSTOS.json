@@ -1,0 +1,266 @@
+{
+	"name": "02_LAS_EDW_RENTABILIDAD_COSTOS",
+	"properties": {
+		"activities": [
+			{
+				"name": "CopyFicheroaCostosLanding",
+				"description": "Copia Datos Fichero Costos a Tabla Costos Landing",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ExcelSource",
+						"storeSettings": {
+							"type": "AzureFileStorageReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						}
+					},
+					"sink": {
+						"type": "SqlDWSink"
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "LS_BlobStorage_Raw",
+							"type": "LinkedServiceReference"
+						}
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "PAIS",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Pais",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "ANO",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Anio",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "MES",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Mes",
+									"type": "Int32"
+								}
+							},
+							{
+								"source": {
+									"name": "PRODUCTO_ID",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Producto_Id",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "PRODUCTO",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Producto",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "TIPO DE PRODUCTO",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Tipo_Producto",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "MAT_PRIMA_STD",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Mat_Prima_STD",
+									"type": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "MOD_STD",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Mod_STD",
+									"type": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "CIP_STD",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CIP_STD",
+									"type": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "MAT_PRIMA_VAR",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Mat_Prima_Var",
+									"type": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "MOD_VAR",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Mod_Var",
+									"type": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "CIP_VAR",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CIP_Var",
+									"type": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "VAR_EXTRAORD_MP",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Var_Extraord_MP",
+									"type": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "VAR_EXTRAORD_MOD",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Var_Extraord_Mod",
+									"type": "Decimal"
+								}
+							},
+							{
+								"source": {
+									"name": "VAR_EXTRAORD_CIP",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Var_Extraord_CIP",
+									"type": "Decimal"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Plano_Costos",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "EDW_LAS_CURATED",
+						"type": "DatasetReference",
+						"parameters": {
+							"SYNAPSE_Server": "wsasadvcoedna.sql.azuresynapse.net",
+							"SYNAPSE_CuratedDB": "SQLCURATEDDVDNA",
+							"SYNAPSE_CuratedSchema": "GRO_LAS",
+							"SYNAPSE_CuratedTable": "stg_EDW_RentabilidadCostos"
+						}
+					}
+				]
+			},
+			{
+				"name": "ProcedureInsertarCostosCurated",
+				"description": "Inserta Data de Costos Landing a Curated, ya transformada",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CopyFicheroaCostosLanding",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[GRO_LAS].[usp_load_edw_costoscurated]"
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SQLSynapse_Curated",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"LS_Server": "wsasadvcoedna.privatelink.sql.azuresynapse.net",
+						"LS_DB": "SQLCURATEDDVDNA"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SYNAPSE_Server": {
+				"type": "string",
+				"defaultValue": "wsasadvcoedna.privatelink.sql.azuresynapse.net"
+			},
+			"SYNAPSE_CuratedDB": {
+				"type": "string",
+				"defaultValue": "SQLCURATEDDVDNA"
+			},
+			"SYNAPSE_LandingDB": {
+				"type": "string",
+				"defaultValue": "SQLLANDINGDVDNA"
+			}
+		},
+		"folder": {
+			"name": "LAS Master"
+		},
+		"annotations": [],
+		"lastPublishTime": "2022-02-09T17:17:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

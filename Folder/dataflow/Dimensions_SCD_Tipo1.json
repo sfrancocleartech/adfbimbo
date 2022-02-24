@@ -1,0 +1,77 @@
+{
+	"name": "Dimensions_SCD_Tipo1",
+	"properties": {
+		"description": "This is a generalized Slowly Changing Dimension Type 1 that is parameterized to work against different dimension tables and dimension types.",
+		"folder": {
+			"name": "GenericSCD"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EDW_LAS_CURATED",
+						"type": "DatasetReference"
+					},
+					"name": "NewMembers"
+				},
+				{
+					"dataset": {
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference"
+					},
+					"name": "ExistingMembers"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference"
+					},
+					"name": "sinkUpdate"
+				},
+				{
+					"dataset": {
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference"
+					},
+					"name": "sinkInsert"
+				}
+			],
+			"transformations": [
+				{
+					"name": "PickCols1"
+				},
+				{
+					"name": "PickCols2"
+				},
+				{
+					"name": "Lookup1"
+				},
+				{
+					"name": "checkMatch"
+				},
+				{
+					"name": "UpdateSetAttrs"
+				},
+				{
+					"name": "isMatching"
+				},
+				{
+					"name": "AlterRow1"
+				},
+				{
+					"name": "InsertSetAttrs"
+				},
+				{
+					"name": "SelectCols"
+				},
+				{
+					"name": "SelectCol"
+				}
+			],
+			"script": "parameters{\n\tkeycol as string (\"\")\n}\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinferDriftedColumnTypes: true,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> NewMembers\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinferDriftedColumnTypes: true,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tstaged: false) ~> ExistingMembers\nNewMembers derive(businesskey1 = toString(byPosition(1))) ~> PickCols1\nExistingMembers derive(businesskey2 = toString(byPosition(1))) ~> PickCols2\nPickCols1, PickCols2 lookup(businesskey1 == businesskey2,\n\tmultiple: false,\n\tpickup: 'any',\n\tbroadcast: 'auto')~> Lookup1\nisMatching split(match,\n\tdisjoint: false) ~> checkMatch@(isMatch, noMatch)\ncheckMatch@isMatch derive(FechaUltMod = currentTimestamp()) ~> UpdateSetAttrs\nLookup1 derive(match = isMatch()) ~> isMatching\nUpdateSetAttrs alterRow(updateIf(true())) ~> AlterRow1\ncheckMatch@noMatch derive(FechaUltMod = currentTimestamp(),\n\t\tFechaCrea = currentTimestamp(),\n\t\tUsuarioCrea = 'USR_LAS_ADF',\n\t\tUsuarioUltMod = 'USR_LAS_ADF') ~> InsertSetAttrs\nInsertSetAttrs select(skipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectCols\nAlterRow1 select(skipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> SelectCol\nSelectCol sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:true,\n\tupsertable:false,\n\tkeys:[($keycol)],\n\tformat: 'table',\n\tstaged: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> sinkUpdate\nSelectCols sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> sinkInsert"
+		}
+	}
+}
