@@ -19,10 +19,6 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"fileName": {
-					"value": "@dataset().CSV_FILE",
-					"type": "Expression"
-				},
 				"folderPath": "Datos planos",
 				"container": "fsdvdnalaseus2raw"
 			},
