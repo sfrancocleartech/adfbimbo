@@ -83,6 +83,12 @@
 						"datasetParameters": {
 							"PuntosVenta": {
 								"Puntos_de_venta_mensual": "/Datos planos/*"
+							},
+							"OutputPtoVta": {
+								"SYNAPSE_Server": "wsasadvcoedna.privatelink.sql.azuresynapse.net",
+								"SYNAPSE_SemanticDB": "SQLSEML2DVDNA",
+								"SYNAPSE_SemanticSchema": "GRO_LAS",
+								"SYNAPSE_SemanticTable": "EDW_FACTL2_MensualPuntosVenta"
 							}
 						}
 					},
