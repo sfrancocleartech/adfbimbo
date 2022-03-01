@@ -14,7 +14,11 @@
 			],
 			"sinks": [
 				{
-					"name": "EDWFACTLMensualPuntosVenta"
+					"dataset": {
+						"referenceName": "EDW_LAS_SEMANTIC",
+						"type": "DatasetReference"
+					},
+					"name": "OutputPtoVta"
 				}
 			],
 			"transformations": [
@@ -25,7 +29,7 @@
 					"name": "Transform1"
 				}
 			],
-			"script": "source(output(\n\t\tPais as string,\n\t\t{Año} as string,\n\t\tMes as string,\n\t\tid_canal as integer,\n\t\tCanal_descripcion as string,\n\t\tceve_virtuales as integer,\n\t\tceves_novirtuales as integer,\n\t\trutas_cantidad_un as integer,\n\t\trutas_cantidad_meta as integer,\n\t\tpdv_cantidad_un as integer,\n\t\tpdv_cantidad_meta as integer,\n\t\tclientes_cantidad_un as integer,\n\t\tclientes_cantidad_meta as integer,\n\t\trutas_cantidad_acum_un as integer,\n\t\trutas_cantidad_acum_meta as integer,\n\t\tpdv_cantidad_acum_un as integer,\n\t\tpdv_cantidad_acum_meta as integer,\n\t\tclientes_cantidad_acum_un as integer,\n\t\tclientes_cantidad_acum_meta as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tlimit: 10000,\n\tignoreNoFilesFound: false) ~> PuntosVenta\nTransform1 derive(Periodo_Id = concat({Año}, Mes1)) ~> Transform2\nPuntosVenta derive(Mes1 = case(Mes==\"1\"|| Mes==\"2\" ||Mes==\"3\" ||  Mes==\"4\" ||  Mes==\"5\" ||  Mes==\"6\" || Mes==\"7\" || Mes==\"8\" || Mes==\"9\", concat(\"0\", Mes), Mes)\r\n) ~> Transform1\nTransform2 sink(allowSchemaDrift: false,\n\tvalidateSchema: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tsaveOrder: 1,\n\tmapColumn(\n\t\tPais_desc = Pais,\n\t\tPeriodo_Id,\n\t\tCanal_Id = id_canal,\n\t\tCanal_desc = Canal_descripcion,\n\t\tceve_virtuales,\n\t\tceve_No_virtuales = ceves_novirtuales,\n\t\trutas_cant = rutas_cantidad_un,\n\t\trutas_cant_meta = rutas_cantidad_meta,\n\t\tpdv_cant = pdv_cantidad_un,\n\t\tpdv_cant_meta = pdv_cantidad_meta,\n\t\tclientes_cant = clientes_cantidad_un,\n\t\tclientes_cant_meta = clientes_cantidad_meta,\n\t\trutas_cant_acum = rutas_cantidad_acum_un,\n\t\trutas_cant_acum_meta = rutas_cantidad_acum_meta,\n\t\tclientes_cant_acum_meta = clientes_cantidad_acum_meta,\n\t\tpdv_cant_acum = pdv_cantidad_acum_un,\n\t\tpdv_cant_acum_meta = pdv_cantidad_acum_meta,\n\t\tclientes_cant_acum = clientes_cantidad_acum_un\n\t)) ~> EDWFACTLMensualPuntosVenta"
+			"script": "source(output(\n\t\tPais as string,\n\t\t{Año} as string,\n\t\tMes as string,\n\t\tid_canal as integer,\n\t\tCanal_descripcion as string,\n\t\tceve_virtuales as integer,\n\t\tceves_novirtuales as integer,\n\t\trutas_cantidad_un as integer,\n\t\trutas_cantidad_meta as integer,\n\t\tpdv_cantidad_un as integer,\n\t\tpdv_cantidad_meta as integer,\n\t\tclientes_cantidad_un as integer,\n\t\tclientes_cantidad_meta as integer,\n\t\trutas_cantidad_acum_un as integer,\n\t\trutas_cantidad_acum_meta as integer,\n\t\tpdv_cantidad_acum_un as integer,\n\t\tpdv_cantidad_acum_meta as integer,\n\t\tclientes_cantidad_acum_un as integer,\n\t\tclientes_cantidad_acum_meta as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tlimit: 10000,\n\tignoreNoFilesFound: false) ~> PuntosVenta\nTransform1 derive(Periodo_Id = concat({Año}, Mes1)) ~> Transform2\nPuntosVenta derive(Mes1 = case(Mes==\"1\"|| Mes==\"2\" ||Mes==\"3\" ||  Mes==\"4\" ||  Mes==\"5\" ||  Mes==\"6\" || Mes==\"7\" || Mes==\"8\" || Mes==\"9\", concat(\"0\", Mes), Mes)) ~> Transform1\nTransform2 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tstaged: true,\n\tallowCopyCommand: true,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tsaveOrder: 1,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\tPais,\n\t\tPeriodo_Id,\n\t\tid_canal,\n\t\tCanal_descripcion,\n\t\tceve_virtuales,\n\t\tceves_novirtuales,\n\t\trutas_cantidad_un,\n\t\trutas_cantidad_meta,\n\t\tpdv_cantidad_un,\n\t\tpdv_cantidad_meta,\n\t\tclientes_cantidad_un,\n\t\tclientes_cantidad_meta,\n\t\trutas_cantidad_acum_un,\n\t\trutas_cantidad_acum_meta,\n\t\tpdv_cantidad_acum_un,\n\t\tpdv_cantidad_acum_meta,\n\t\tclientes_cantidad_acum_un,\n\t\tclientes_cantidad_acum_meta\n\t)) ~> OutputPtoVta"
 		}
 	}
 }
